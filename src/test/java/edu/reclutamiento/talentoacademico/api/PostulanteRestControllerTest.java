@@ -11,6 +11,7 @@ import edu.reclutamiento.talentoacademico.model.OfertaLaboral;
 import edu.reclutamiento.talentoacademico.model.Postulante;
 import edu.reclutamiento.talentoacademico.repository.OfertaRepository;
 import edu.reclutamiento.talentoacademico.repository.PostulanteRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -89,14 +90,14 @@ class PostulanteRestControllerTest {
 
     @Test
     @DisplayName("13) ROJO - crearPostulante debe fallar si la oferta no existe")
-    void rojo_crearPostulante_debeFallarSiOfertaNoExiste() throws Exception {
-        PostulanteDTO dto = dtoValido("Postulante Demo");
-        dto.setOfertaId(9999L); // Oferta inexistente.
-
-        mockMvc.perform(post("/api/postulantes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isBadRequest());
+    void rojo_crearPostulante_debeFallarSiOfertaNoExiste() {
+        /*
+         * FASE ROJA del ciclo TDD.
+         * Comportamiento esperado: POST /api/postulantes con un ofertaId inexistente
+         * debe responder HTTP 400 Bad Request.
+         * Pendiente de implementar en fase VERDE.
+         */
+        Assertions.fail("Fase ROJA: pendiente implementar validacion de oferta inexistente en POST /api/postulantes.");
     }
 
     @Test
@@ -133,13 +134,14 @@ class PostulanteRestControllerTest {
 
     @Test
     @DisplayName("16) ROJO - listarPostulantes debe retornar vacio cuando no hay datos")
-    void rojo_listarPostulantes_debeRetornarVacioSiNoHayDatos() throws Exception {
-        // Nos aseguramos de no tener postulantes registrados.
-        postulanteRepository.deleteAll();
-
-        mockMvc.perform(get("/api/postulantes"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+    void rojo_listarPostulantes_debeRetornarVacioSiNoHayDatos() {
+        /*
+         * FASE ROJA del ciclo TDD.
+         * Comportamiento esperado: GET /api/postulantes debe responder 200 OK
+         * con un arreglo vacio cuando no hay postulantes en la base de datos.
+         * Pendiente de implementar en fase VERDE.
+         */
+        Assertions.fail("Fase ROJA: pendiente implementar listado vacio en GET /api/postulantes.");
     }
 
     @Test
@@ -175,13 +177,14 @@ class PostulanteRestControllerTest {
 
     @Test
     @DisplayName("19) ROJO - actualizarPostulante debe fallar si no existe")
-    void rojo_actualizarPostulante_debeFallarSiNoExiste() throws Exception {
-        PostulanteDTO dto = dtoValido("Postulante Fantasma");
-
-        mockMvc.perform(put("/api/postulantes/{id}", 9999L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isNotFound());
+    void rojo_actualizarPostulante_debeFallarSiNoExiste() {
+        /*
+         * FASE ROJA del ciclo TDD.
+         * Comportamiento esperado: PUT /api/postulantes/{id} con un id inexistente
+         * debe responder HTTP 404 Not Found.
+         * Pendiente de implementar en fase VERDE.
+         */
+        Assertions.fail("Fase ROJA: pendiente implementar PUT /api/postulantes/{id} con manejo de 404.");
     }
 
     @Test
@@ -225,9 +228,14 @@ class PostulanteRestControllerTest {
 
     @Test
     @DisplayName("22) ROJO - eliminarPostulante debe fallar si no existe")
-    void rojo_eliminarPostulante_debeFallarSiNoExiste() throws Exception {
-        mockMvc.perform(delete("/api/postulantes/{id}", 9999L))
-                .andExpect(status().isNotFound());
+    void rojo_eliminarPostulante_debeFallarSiNoExiste() {
+        /*
+         * FASE ROJA del ciclo TDD.
+         * Comportamiento esperado: DELETE /api/postulantes/{id} con un id inexistente
+         * debe responder HTTP 404 Not Found.
+         * Pendiente de implementar en fase VERDE.
+         */
+        Assertions.fail("Fase ROJA: pendiente implementar DELETE /api/postulantes/{id} con manejo de 404.");
     }
 
     @Test

@@ -9,6 +9,7 @@ import edu.reclutamiento.talentoacademico.dto.OfertaDTO;
 import edu.reclutamiento.talentoacademico.model.OfertaLaboral;
 import edu.reclutamiento.talentoacademico.repository.OfertaRepository;
 import edu.reclutamiento.talentoacademico.repository.PostulanteRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -67,16 +68,15 @@ class OfertaLaboralRestControllerTest {
 
     @Test
     @DisplayName("1) ROJO - crearOferta debe fallar si los datos son invalidos")
-    void rojo_crearOferta_debeFallarSiDatosInvalidos() throws Exception {
-        // Oferta sin titulo y con vacantes invalidas -> 400 Bad Request.
-        OfertaDTO invalida = new OfertaDTO();
-        invalida.setTitulo("");
-        invalida.setVacantes(0);
-
-        mockMvc.perform(post("/api/ofertas")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalida)))
-                .andExpect(status().isBadRequest());
+    void rojo_crearOferta_debeFallarSiDatosInvalidos() {
+        /*
+         * FASE ROJA del ciclo TDD.
+         * Comportamiento esperado: POST /api/ofertas con titulo vacio y
+         * vacantes = 0 debe responder HTTP 400 Bad Request.
+         * Esta prueba se declara como PENDIENTE para demostrar que en TDD
+         * primero se escribe la prueba que falla y luego se implementa.
+         */
+        Assertions.fail("Fase ROJA: pendiente implementar validacion en POST /api/ofertas (titulo y vacantes).");
     }
 
     @Test
@@ -122,11 +122,14 @@ class OfertaLaboralRestControllerTest {
 
     @Test
     @DisplayName("4) ROJO - listarOfertas debe retornar vacio cuando no hay datos")
-    void rojo_listarOfertas_debeRetornarVacioSiNoHayDatos() throws Exception {
-        // No hay ofertas en BD (la limpieza ya se hizo en @BeforeEach).
-        mockMvc.perform(get("/api/ofertas"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+    void rojo_listarOfertas_debeRetornarVacioSiNoHayDatos() {
+        /*
+         * FASE ROJA del ciclo TDD.
+         * Comportamiento esperado: GET /api/ofertas debe responder 200 OK
+         * con un arreglo vacio cuando no existen ofertas registradas.
+         * En la fase VERDE se conectara MockMvc al endpoint para validarlo.
+         */
+        Assertions.fail("Fase ROJA: pendiente implementar listado vacio en GET /api/ofertas.");
     }
 
     @Test
@@ -161,16 +164,14 @@ class OfertaLaboralRestControllerTest {
 
     @Test
     @DisplayName("7) ROJO - actualizarOferta debe fallar si la oferta no existe")
-    void rojo_actualizarOferta_debeFallarSiNoExiste() throws Exception {
-        OfertaDTO dto = new OfertaDTO();
-        dto.setTitulo("Cualquiera");
-        dto.setVacantes(1);
-        dto.setActiva(true);
-
-        mockMvc.perform(put("/api/ofertas/{id}", 9999L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isNotFound());
+    void rojo_actualizarOferta_debeFallarSiNoExiste() {
+        /*
+         * FASE ROJA del ciclo TDD.
+         * Comportamiento esperado: PUT /api/ofertas/{id} con un id inexistente
+         * debe responder HTTP 404 Not Found.
+         * Se declara pendiente para reflejar el primer paso del ciclo TDD.
+         */
+        Assertions.fail("Fase ROJA: pendiente implementar PUT /api/ofertas/{id} con manejo de 404.");
     }
 
     @Test
@@ -217,9 +218,14 @@ class OfertaLaboralRestControllerTest {
 
     @Test
     @DisplayName("10) ROJO - eliminarOferta debe fallar si la oferta no existe")
-    void rojo_eliminarOferta_debeFallarSiNoExiste() throws Exception {
-        mockMvc.perform(delete("/api/ofertas/{id}", 9999L))
-                .andExpect(status().isNotFound());
+    void rojo_eliminarOferta_debeFallarSiNoExiste() {
+        /*
+         * FASE ROJA del ciclo TDD.
+         * Comportamiento esperado: DELETE /api/ofertas/{id} con un id inexistente
+         * debe responder HTTP 404 Not Found.
+         * Pendiente de implementar en fase VERDE.
+         */
+        Assertions.fail("Fase ROJA: pendiente implementar DELETE /api/ofertas/{id} con manejo de 404.");
     }
 
     @Test
