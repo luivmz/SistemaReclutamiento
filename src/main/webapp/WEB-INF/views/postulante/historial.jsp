@@ -4,9 +4,9 @@
 <html>
 <head><title>Historial</title><link rel="stylesheet" href="/resources/css/style.css"></head>
 <body>
-<header><h1>Talento Academico</h1><nav><a href="/postulante/mis-postulaciones">Mis postulaciones</a><a href="/logout">Salir</a></nav></header>
+<%@ include file="../includes/public-header.jsp" %>
 <main>
-    <h2>Historial de procesos</h2>
+    <h2>Estado de mis postulaciones</h2>
     <table>
         <tr><th>Postulante</th><th>Oferta</th><th>Estado final</th><th>Puntaje</th></tr>
         <c:forEach var="p" items="${historial}">

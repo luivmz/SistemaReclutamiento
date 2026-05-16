@@ -5,5 +5,5 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PreguntaRepository extends JpaRepository<Pregunta, Long> {
-    List<Pregunta> findByOfertaId(Long ofertaId);
+    List<Pregunta> findByOfertasId(Long ofertaId);
 }

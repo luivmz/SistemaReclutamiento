@@ -1,7 +1,6 @@
 package edu.reclutamiento.talentoacademico.controller;
 
 import edu.reclutamiento.talentoacademico.dto.PostulanteDTO;
-import edu.reclutamiento.talentoacademico.model.Usuario;
 import edu.reclutamiento.talentoacademico.service.OfertaService;
 import edu.reclutamiento.talentoacademico.service.PostulanteService;
 import jakarta.servlet.http.HttpSession;
@@ -23,35 +22,55 @@ public class PostulanteController {
         this.ofertaService = ofertaService;
     }
 
-    @PostMapping("/postular")
-    public String postular(@RequestParam Long ofertaId, @ModelAttribute PostulanteDTO postulante, HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario != null) {
-            postulante.setNombre(usuario.getNombre());
-            postulante.setEmail(usuario.getEmail());
+    @GetMapping("/ofertas/{id}/postular")
+    public String formularioPostulacion(@PathVariable Long id, Model model, HttpSession session) {
+        if ("ADMIN".equals(session.getAttribute("rol"))) {
+            return "redirect:/acceso-denegado";
         }
-        postulante.setOfertaId(ofertaId);
-        postulanteService.postular(postulante);
+        model.addAttribute("oferta", ofertaService.buscar(id));
+        model.addAttribute("postulante", new PostulanteDTO());
+        return "postulante/postular";
+    }
+
+    @PostMapping("/ofertas/{id}/postular")
+    public String postular(@PathVariable Long id, @ModelAttribute PostulanteDTO postulante,
+                           HttpSession session, Model model) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if ("ADMIN".equals(session.getAttribute("rol"))) {
+            return "redirect:/acceso-denegado";
+        }
+        if (postulanteService.yaPostulo(usuarioId, id)) {
+            model.addAttribute("oferta", ofertaService.buscar(id));
+            model.addAttribute("error", "Ya postulaste a esta oferta.");
+            return "postulante/postular";
+        }
+        postulante.setOfertaId(id);
+        postulanteService.postular(postulante, usuarioId);
         return "redirect:/postulante/mis-postulaciones";
     }
 
     @GetMapping("/postulante/mis-postulaciones")
     public String misPostulaciones(HttpSession session, Model model) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-        String email = usuario == null ? "" : usuario.getEmail();
-        model.addAttribute("postulaciones", postulanteService.listarPorEmail(email));
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        model.addAttribute("postulaciones", postulanteService.listarPorUsuario(usuarioId));
         return "postulante/mis-postulaciones";
     }
 
-    @GetMapping("/postulante/evaluacion")
-    public String evaluacion(Model model) {
-        model.addAttribute("ofertas", ofertaService.listarActivas());
-        return "postulante/evaluacion";
+    @GetMapping("/postulante/postulaciones/{id}/estado")
+    public String estado(@PathVariable Long id, HttpSession session, Model model) {
+        PostulanteDTO postulacion = postulanteService.buscar(id);
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (postulacion == null || !usuarioId.equals(postulacion.getUsuarioId())) {
+            return "redirect:/acceso-denegado";
+        }
+        model.addAttribute("postulacion", postulacion);
+        return "postulante/estado";
     }
 
     @GetMapping("/postulante/historial")
-    public String historial(Model model) {
-        model.addAttribute("historial", postulanteService.listarHistorial());
+    public String historial(HttpSession session, Model model) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        model.addAttribute("historial", postulanteService.listarPorUsuario(usuarioId));
         return "postulante/historial";
     }
 

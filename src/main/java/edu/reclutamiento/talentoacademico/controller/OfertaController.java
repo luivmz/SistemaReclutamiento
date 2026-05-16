@@ -50,6 +50,17 @@ public class OfertaController {
         return "publico/contacto";
     }
 
+    @PostMapping("/contacto")
+    public String enviarContacto(Model model) {
+        model.addAttribute("mensaje", "Solicitud recibida. Nos comunicaremos contigo pronto.");
+        return "publico/contacto";
+    }
+
+    @GetMapping("/publicidad")
+    public String publicidad() {
+        return "publico/publicidad";
+    }
+
     @GetMapping("/admin/ofertas")
     public String adminOfertas(Model model) {
         model.addAttribute("ofertas", ofertaService.listar());

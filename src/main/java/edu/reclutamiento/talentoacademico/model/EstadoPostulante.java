@@ -1,8 +1,8 @@
 package edu.reclutamiento.talentoacademico.model;
 
 public enum EstadoPostulante {
-    ACTIVO,
+    POSTULADO,
+    EN_EVALUACION,
     APROBADO,
-    DESAPROBADO,
-    FINALIZADO
+    RECHAZADO
 }

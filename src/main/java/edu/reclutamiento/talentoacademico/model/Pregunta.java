@@ -1,6 +1,8 @@
 package edu.reclutamiento.talentoacademico.model;
 
 import jakarta.persistence.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "preguntas")
@@ -15,9 +17,13 @@ public class Pregunta {
 
     private String opcionCorrecta;
 
-    @ManyToOne
-    @JoinColumn(name = "oferta_id")
-    private OfertaLaboral oferta;
+    @ManyToMany
+    @JoinTable(
+            name = "preguntas_ofertas",
+            joinColumns = @JoinColumn(name = "pregunta_id"),
+            inverseJoinColumns = @JoinColumn(name = "oferta_id")
+    )
+    private Set<OfertaLaboral> ofertas = new LinkedHashSet<>();
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -25,6 +31,6 @@ public class Pregunta {
     public void setEnunciado(String enunciado) { this.enunciado = enunciado; }
     public String getOpcionCorrecta() { return opcionCorrecta; }
     public void setOpcionCorrecta(String opcionCorrecta) { this.opcionCorrecta = opcionCorrecta; }
-    public OfertaLaboral getOferta() { return oferta; }
-    public void setOferta(OfertaLaboral oferta) { this.oferta = oferta; }
+    public Set<OfertaLaboral> getOfertas() { return ofertas; }
+    public void setOfertas(Set<OfertaLaboral> ofertas) { this.ofertas = ofertas; }
 }

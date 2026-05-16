@@ -11,13 +11,23 @@ public class PostulanteMapper {
         dto.setNombre(postulante.getNombre());
         dto.setEmail(postulante.getEmail());
         dto.setTelefono(postulante.getTelefono());
+        dto.setExperiencia(postulante.getExperiencia());
+        dto.setHabilidades(postulante.getHabilidades());
         dto.setCv(postulante.getCv());
+        dto.setFechaPostulacion(postulante.getFechaPostulacion() == null ? "" : postulante.getFechaPostulacion().toString());
         dto.setEstado(postulante.getEstado().name());
         dto.setPuntaje(postulante.getPuntaje());
         dto.setAprobado(postulante.getAprobado());
+        dto.setObservacion(postulante.getObservacion());
         if (postulante.getOferta() != null) {
             dto.setOfertaId(postulante.getOferta().getId());
             dto.setOfertaTitulo(postulante.getOferta().getTitulo());
+            if (postulante.getOferta().getArea() != null) {
+                dto.setAreaNombre(postulante.getOferta().getArea().getNombre());
+            }
+        }
+        if (postulante.getUsuario() != null) {
+            dto.setUsuarioId(postulante.getUsuario().getId());
         }
         return dto;
     }
@@ -28,10 +38,13 @@ public class PostulanteMapper {
         postulante.setNombre(dto.getNombre());
         postulante.setEmail(dto.getEmail());
         postulante.setTelefono(dto.getTelefono());
+        postulante.setExperiencia(dto.getExperiencia());
+        postulante.setHabilidades(dto.getHabilidades());
         postulante.setCv(dto.getCv());
-        postulante.setEstado(dto.getEstado() == null ? EstadoPostulante.ACTIVO : EstadoPostulante.valueOf(dto.getEstado()));
+        postulante.setEstado(dto.getEstado() == null ? EstadoPostulante.POSTULADO : EstadoPostulante.valueOf(dto.getEstado()));
         postulante.setPuntaje(dto.getPuntaje() == null ? 0 : dto.getPuntaje());
         postulante.setAprobado(dto.getAprobado() != null && dto.getAprobado());
+        postulante.setObservacion(dto.getObservacion());
         return postulante;
     }
 }

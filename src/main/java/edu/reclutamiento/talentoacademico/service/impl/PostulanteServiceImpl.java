@@ -5,8 +5,10 @@ import edu.reclutamiento.talentoacademico.mapper.PostulanteMapper;
 import edu.reclutamiento.talentoacademico.model.EstadoPostulante;
 import edu.reclutamiento.talentoacademico.model.OfertaLaboral;
 import edu.reclutamiento.talentoacademico.model.Postulante;
+import edu.reclutamiento.talentoacademico.model.Usuario;
 import edu.reclutamiento.talentoacademico.repository.OfertaRepository;
 import edu.reclutamiento.talentoacademico.repository.PostulanteRepository;
+import edu.reclutamiento.talentoacademico.repository.UsuarioRepository;
 import edu.reclutamiento.talentoacademico.service.PostulanteService;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -15,10 +17,13 @@ import org.springframework.stereotype.Service;
 public class PostulanteServiceImpl implements PostulanteService {
     private final PostulanteRepository postulanteRepository;
     private final OfertaRepository ofertaRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public PostulanteServiceImpl(PostulanteRepository postulanteRepository, OfertaRepository ofertaRepository) {
+    public PostulanteServiceImpl(PostulanteRepository postulanteRepository, OfertaRepository ofertaRepository,
+                                 UsuarioRepository usuarioRepository) {
         this.postulanteRepository = postulanteRepository;
         this.ofertaRepository = ofertaRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     public List<PostulanteDTO> listar() {
@@ -26,14 +31,16 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
     public List<PostulanteDTO> listarActivos() {
-        return postulanteRepository.findByEstado(EstadoPostulante.ACTIVO).stream().map(PostulanteMapper::toDTO).toList();
+        return postulanteRepository.findByEstadoIn(List.of(
+                EstadoPostulante.POSTULADO,
+                EstadoPostulante.EN_EVALUACION
+        )).stream().map(PostulanteMapper::toDTO).toList();
     }
 
     public List<PostulanteDTO> listarHistorial() {
         return postulanteRepository.findByEstadoIn(List.of(
                 EstadoPostulante.APROBADO,
-                EstadoPostulante.DESAPROBADO,
-                EstadoPostulante.FINALIZADO
+                EstadoPostulante.RECHAZADO
         )).stream().map(PostulanteMapper::toDTO).toList();
     }
 
@@ -41,11 +48,29 @@ public class PostulanteServiceImpl implements PostulanteService {
         return postulanteRepository.findByEmail(email).stream().map(PostulanteMapper::toDTO).toList();
     }
 
-    public PostulanteDTO postular(PostulanteDTO dto) {
+    public List<PostulanteDTO> listarPorUsuario(Long usuarioId) {
+        return postulanteRepository.findByUsuarioId(usuarioId).stream().map(PostulanteMapper::toDTO).toList();
+    }
+
+    public PostulanteDTO buscar(Long id) {
+        return postulanteRepository.findById(id).map(PostulanteMapper::toDTO).orElse(null);
+    }
+
+    public PostulanteDTO postular(PostulanteDTO dto, Long usuarioId) {
+        if (dto.getOfertaId() != null && yaPostulo(usuarioId, dto.getOfertaId())) {
+            throw new IllegalStateException("Ya postulaste a esta oferta.");
+        }
         Postulante postulante = PostulanteMapper.toEntity(dto);
-        postulante.setEstado(EstadoPostulante.ACTIVO);
+        postulante.setEstado(EstadoPostulante.POSTULADO);
         postulante.setAprobado(false);
         asignarOferta(dto, postulante);
+        Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
+        postulante.setUsuario(usuario);
+        postulante.setNombre(usuario.getNombre());
+        postulante.setEmail(usuario.getEmail());
+        if (postulante.getTelefono() == null || postulante.getTelefono().isBlank()) {
+            postulante.setTelefono(usuario.getTelefono());
+        }
         return PostulanteMapper.toDTO(postulanteRepository.save(postulante));
     }
 
@@ -60,11 +85,36 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
     public void rechazar(Long id) {
-        cambiarEstado(id, EstadoPostulante.DESAPROBADO, false);
+        cambiarEstado(id, EstadoPostulante.RECHAZADO, false);
     }
 
     public void finalizar(Long id) {
-        cambiarEstado(id, EstadoPostulante.FINALIZADO, false);
+        cambiarEstado(id, EstadoPostulante.RECHAZADO, false);
+    }
+
+    public boolean yaPostulo(Long usuarioId, Long ofertaId) {
+        return postulanteRepository.existsByUsuarioIdAndOfertaId(usuarioId, ofertaId);
+    }
+
+    public long contarPorUsuario(Long usuarioId) {
+        return postulanteRepository.countByUsuarioId(usuarioId);
+    }
+
+    public long contarPorUsuarioYEstado(Long usuarioId, String estado) {
+        return postulanteRepository.countByUsuarioIdAndEstado(usuarioId, EstadoPostulante.valueOf(estado));
+    }
+
+    public void marcarEnEvaluacion(Long id) {
+        cambiarEstado(id, EstadoPostulante.EN_EVALUACION, false);
+    }
+
+    public void registrarEvaluacion(Long id, int puntaje, boolean aprobado) {
+        Postulante postulante = postulanteRepository.findById(id).orElseThrow();
+        postulante.setPuntaje(puntaje);
+        postulante.setAprobado(aprobado);
+        postulante.setEstado(aprobado ? EstadoPostulante.APROBADO : EstadoPostulante.RECHAZADO);
+        postulante.setObservacion(aprobado ? "Evaluacion aprobada." : "Evaluacion desaprobada.");
+        postulanteRepository.save(postulante);
     }
 
     private void cambiarEstado(Long id, EstadoPostulante estado, boolean aprobado) {

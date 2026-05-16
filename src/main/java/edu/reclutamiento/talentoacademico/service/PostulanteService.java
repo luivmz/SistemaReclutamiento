@@ -8,8 +8,15 @@ public interface PostulanteService {
     List<PostulanteDTO> listarActivos();
     List<PostulanteDTO> listarHistorial();
     List<PostulanteDTO> listarPorEmail(String email);
-    PostulanteDTO postular(PostulanteDTO dto);
+    List<PostulanteDTO> listarPorUsuario(Long usuarioId);
+    PostulanteDTO buscar(Long id);
+    PostulanteDTO postular(PostulanteDTO dto, Long usuarioId);
     PostulanteDTO actualizar(PostulanteDTO dto);
+    boolean yaPostulo(Long usuarioId, Long ofertaId);
+    long contarPorUsuario(Long usuarioId);
+    long contarPorUsuarioYEstado(Long usuarioId, String estado);
+    void marcarEnEvaluacion(Long id);
+    void registrarEvaluacion(Long id, int puntaje, boolean aprobado);
     void aprobar(Long id);
     void rechazar(Long id);
     void finalizar(Long id);

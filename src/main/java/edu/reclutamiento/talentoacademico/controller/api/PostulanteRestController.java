@@ -31,7 +31,7 @@ public class PostulanteRestController {
 
     @PostMapping
     public PostulanteDTO postular(@RequestBody PostulanteDTO postulante) {
-        return postulanteService.postular(postulante);
+        return postulanteService.postular(postulante, postulante.getUsuarioId());
     }
 
     @PutMapping("/{id}/aprobar")

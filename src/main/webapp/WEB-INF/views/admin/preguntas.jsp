@@ -10,8 +10,8 @@
 <main class="admin-content">
     <h2 class="page-title">Preguntas</h2>
     <form method="post" action="/admin/preguntas" class="card">
-        <label>Oferta</label>
-        <select name="ofertaId">
+        <label>Ofertas laborales</label>
+        <select name="ofertaIds" multiple size="4">
             <c:forEach var="o" items="${ofertas}">
                 <option value="${o.id}">${o.titulo}</option>
             </c:forEach>
@@ -21,9 +21,9 @@
         <button type="submit">Guardar</button>
     </form>
     <table>
-        <tr><th>Oferta</th><th>Pregunta</th><th>Correcta</th></tr>
+        <tr><th>Ofertas</th><th>Pregunta</th><th>Correcta</th></tr>
         <c:forEach var="p" items="${preguntas}">
-            <tr><td>${p.ofertaTitulo}</td><td>${p.enunciado}</td><td>${p.opcionCorrecta}</td></tr>
+            <tr><td>${p.ofertasTitulos}</td><td>${p.enunciado}</td><td>${p.opcionCorrecta}</td></tr>
         </c:forEach>
     </table>
 </main>

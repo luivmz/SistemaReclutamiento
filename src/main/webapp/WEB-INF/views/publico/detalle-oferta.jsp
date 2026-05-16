@@ -11,15 +11,11 @@
         <p><strong>Area:</strong> ${oferta.areaNombre}</p>
         <p><strong>Vacantes:</strong> ${oferta.vacantes}</p>
     </section>
-    <h2>Formulario de postulacion</h2>
-    <form method="post" action="/postular" class="card">
-        <input type="hidden" name="ofertaId" value="${oferta.id}">
-        <label>Nombre</label><input name="nombre" required>
-        <label>Email</label><input type="email" name="email" required>
-        <label>Telefono</label><input name="telefono">
-        <label>CV</label><input name="cv" placeholder="Nombre del archivo o enlace">
-        <button type="submit">Enviar postulacion</button>
-    </form>
+    <section class="card">
+        <h2>Postulacion</h2>
+        <p>Para postular debes iniciar sesion con una cuenta de postulante.</p>
+        <a class="btn" href="/ofertas/${oferta.id}/postular">Postular a esta oferta</a>
+    </section>
 </main>
 </body>
 </html>

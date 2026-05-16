@@ -111,6 +111,11 @@ button, .btn {
     color: #9b1c31;
 }
 
+.success {
+    color: #236b3a;
+    font-weight: bold;
+}
+
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));

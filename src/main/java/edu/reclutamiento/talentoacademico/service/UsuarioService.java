@@ -10,4 +10,6 @@ public interface UsuarioService {
     UsuarioDTO guardar(UsuarioDTO dto);
     void eliminar(Long id);
     Optional<Usuario> login(String email, String password);
+    Optional<Usuario> buscarPorId(Long id);
+    Optional<Usuario> buscarPorEmail(String email);
 }

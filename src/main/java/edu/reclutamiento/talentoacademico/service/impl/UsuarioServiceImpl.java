@@ -32,4 +32,12 @@ public class UsuarioServiceImpl implements UsuarioService {
     public Optional<Usuario> login(String email, String password) {
         return usuarioRepository.findByEmailAndPasswordAndActivoTrue(email, password);
     }
+
+    public Optional<Usuario> buscarPorId(Long id) {
+        return usuarioRepository.findById(id);
+    }
+
+    public Optional<Usuario> buscarPorEmail(String email) {
+        return usuarioRepository.findByEmail(email);
+    }
 }

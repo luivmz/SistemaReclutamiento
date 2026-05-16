@@ -13,15 +13,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-public class LoginController {
+public class AuthController {
     private final UsuarioService usuarioService;
 
-    public LoginController(UsuarioService usuarioService) {
+    public AuthController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
     }
 
     @GetMapping("/login")
-    public String login() {
+    public String login(@RequestParam(required = false) String mensaje, Model model) {
+        model.addAttribute("mensaje", mensaje);
         return "publico/login";
     }
 
@@ -32,11 +33,11 @@ public class LoginController {
             model.addAttribute("error", "Credenciales incorrectas");
             return "publico/login";
         }
-        session.setAttribute("usuario", usuario);
+        guardarSesion(session, usuario);
         if (usuario.getRol() == RolUsuario.ADMIN) {
             return "redirect:/admin/dashboard";
         }
-        return "redirect:/postulante/mis-postulaciones";
+        return "redirect:/postulante/dashboard";
     }
 
     @GetMapping("/registro")
@@ -46,16 +47,31 @@ public class LoginController {
     }
 
     @PostMapping("/registro")
-    public String registrar(@ModelAttribute UsuarioDTO usuario) {
+    public String registrar(@ModelAttribute UsuarioDTO usuario, HttpSession session) {
         usuario.setRol("POSTULANTE");
         usuario.setActivo(true);
-        usuarioService.guardar(usuario);
-        return "redirect:/login";
+        UsuarioDTO creado = usuarioService.guardar(usuario);
+        Usuario entidad = usuarioService.buscarPorId(creado.getId()).orElseThrow();
+        guardarSesion(session, entidad);
+        return "redirect:/postulante/dashboard";
     }
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/login";
+    }
+
+    @GetMapping("/acceso-denegado")
+    public String accesoDenegado() {
+        return "publico/acceso-denegado";
+    }
+
+    private void guardarSesion(HttpSession session, Usuario usuario) {
+        session.setAttribute("usuarioId", usuario.getId());
+        session.setAttribute("nombre", usuario.getNombre());
+        session.setAttribute("email", usuario.getEmail());
+        session.setAttribute("telefono", usuario.getTelefono());
+        session.setAttribute("rol", usuario.getRol().name());
     }
 }
