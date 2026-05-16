@@ -39,6 +39,14 @@ public class OfertaServiceImpl implements OfertaService {
     }
 
     public OfertaDTO guardar(OfertaDTO dto) {
+        // F1 - ROJO:
+        // La prueba inicia exigiendo que una oferta sin titulo sea rechazada con HTTP 400.
+        //
+        // F2 - VERDE:
+        // La implementacion minima podria devolver un DTO con el titulo recibido.
+        //
+        // F3 - REFACTORIZAR:
+        // El codigo final valida reglas de negocio, construye la entidad y persiste con JPA.
         validar(dto);
         OfertaLaboral oferta = new OfertaLaboral();
         oferta.setId(dto.getId());
@@ -54,6 +62,14 @@ public class OfertaServiceImpl implements OfertaService {
     }
 
     public OfertaDTO actualizar(Long id, OfertaDTO dto) {
+        // F1 - ROJO:
+        // La prueba exige 404 cuando se intenta actualizar una oferta inexistente.
+        //
+        // F2 - VERDE:
+        // El cambio minimo modifica el titulo de una oferta existente.
+        //
+        // F3 - REFACTORIZAR:
+        // Se reutiliza repository, validacion y mapper para mantener id y guardar cambios reales.
         OfertaLaboral oferta = ofertaRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Oferta no encontrada con id " + id));
         validar(dto);
@@ -85,6 +101,14 @@ public class OfertaServiceImpl implements OfertaService {
     }
 
     public void eliminarReal(Long id) {
+        // F1 - ROJO:
+        // La prueba exige 404 cuando se intenta eliminar una oferta inexistente.
+        //
+        // F2 - VERDE:
+        // El cambio minimo elimina una oferta existente.
+        //
+        // F3 - REFACTORIZAR:
+        // Antes de borrar, se limpian postulantes asociados para respetar la FK de JPA.
         if (!ofertaRepository.existsById(id)) {
             throw new NoSuchElementException("Oferta no encontrada con id " + id);
         }

@@ -77,6 +77,15 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
     public PostulanteDTO crear(PostulanteDTO dto) {
+        // F1 - ROJO:
+        // La prueba inicia exigiendo que un postulante sin nombre sea rechazado con HTTP 400.
+        //
+        // F2 - VERDE:
+        // La implementacion minima podria devolver un DTO con el nombre recibido.
+        //
+        // F3 - REFACTORIZAR:
+        // El codigo final valida, busca la oferta, usa mapper, persiste con repository
+        // y fuerza el estado inicial POSTULADO.
         validarCreacion(dto);
         OfertaLaboral oferta = ofertaRepository.findById(dto.getOfertaId())
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -112,6 +121,14 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
     public PostulanteDTO actualizarPostulante(Long id, PostulanteDTO dto) {
+        // F1 - ROJO:
+        // La prueba exige 404 cuando se actualiza un postulante inexistente.
+        //
+        // F2 - VERDE:
+        // El cambio minimo actualiza el telefono de un postulante existente.
+        //
+        // F3 - REFACTORIZAR:
+        // Se actualizan solo campos enviados y el estado mantiene sincronizado aprobado.
         Postulante postulante = postulanteRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Postulante no encontrado con id " + id));
         if (dto.getNombre() != null && !dto.getNombre().isBlank()) {
@@ -150,6 +167,14 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
     public void eliminarReal(Long id) {
+        // F1 - ROJO:
+        // La prueba exige 404 al eliminar un postulante que no existe.
+        //
+        // F2 - VERDE:
+        // El cambio minimo elimina un postulante existente.
+        //
+        // F3 - REFACTORIZAR:
+        // Al borrar con repository, el postulante deja de aparecer en /api/postulantes/activos.
         if (!postulanteRepository.existsById(id)) {
             throw new NoSuchElementException("Postulante no encontrado con id " + id);
         }

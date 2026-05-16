@@ -1,17 +1,19 @@
 package edu.reclutamiento.talentoacademico.api;
 
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.reclutamiento.talentoacademico.dto.PostulanteDTO;
 import edu.reclutamiento.talentoacademico.model.EstadoPostulante;
 import edu.reclutamiento.talentoacademico.model.OfertaLaboral;
 import edu.reclutamiento.talentoacademico.model.Postulante;
 import edu.reclutamiento.talentoacademico.repository.OfertaRepository;
 import edu.reclutamiento.talentoacademico.repository.PostulanteRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,22 +25,18 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Pruebas TDD para el CRUD REST de Postulante.
- *
- * Las pruebas estan ordenadas siguiendo el ciclo academico ROJO -> VERDE -> REFACTOR
- * para cada operacion del CRUD: Create, Read, Update, Delete.
+ * Imports importantes para explicar en clase:
+ * MockMvc prueba el REST Controller, MediaType envia JSON y los repositories
+ * permiten preparar datos con JPA/H2 sin depender de datos globales.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@DisplayName("TDD - Postulante REST Controller")
+@DisplayName("TDD academico - Postulante REST")
 class PostulanteRestControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
     private OfertaRepository ofertaRepository;
@@ -49,25 +47,23 @@ class PostulanteRestControllerTest {
     private OfertaLaboral ofertaBase;
 
     @BeforeEach
-    void prepararEntorno() {
-        // Limpiamos primero los postulantes (FK) y luego las ofertas.
+    void prepararBaseDeDatos() {
         postulanteRepository.deleteAll();
         ofertaRepository.deleteAll();
 
-        // Creamos una oferta base reutilizable para los escenarios que la requieran.
         ofertaBase = new OfertaLaboral();
-        ofertaBase.setTitulo("Practicante de Pruebas");
-        ofertaBase.setDescripcion("Oferta usada por las pruebas TDD.");
-        ofertaBase.setVacantes(3);
+        ofertaBase.setTitulo("Practicante de Sistemas");
+        ofertaBase.setDescripcion("Oferta base para pruebas TDD");
+        ofertaBase.setVacantes(5);
         ofertaBase.setActiva(true);
         ofertaBase = ofertaRepository.save(ofertaBase);
     }
 
-    private Postulante guardarPostulanteDePrueba(String nombre, EstadoPostulante estado) {
+    private Postulante guardarPostulante(String nombre, String telefono, EstadoPostulante estado) {
         Postulante postulante = new Postulante();
         postulante.setNombre(nombre);
-        postulante.setEmail(nombre.toLowerCase().replace(' ', '.') + "@talento.edu");
-        postulante.setTelefono("999000000");
+        postulante.setEmail(nombre.toLowerCase().replace(" ", ".") + "@correo.edu");
+        postulante.setTelefono(telefono);
         postulante.setEstado(estado);
         postulante.setAprobado(estado == EstadoPostulante.APROBADO);
         postulante.setPuntaje(0);
@@ -75,194 +71,301 @@ class PostulanteRestControllerTest {
         return postulanteRepository.save(postulante);
     }
 
-    private PostulanteDTO dtoValido(String nombre) {
-        PostulanteDTO dto = new PostulanteDTO();
-        dto.setNombre(nombre);
-        dto.setEmail(nombre.toLowerCase().replace(' ', '.') + "@talento.edu");
-        dto.setTelefono("999111222");
-        dto.setOfertaId(ofertaBase.getId());
-        return dto;
-    }
-
-    // ============================================================
-    //                          CREATE
-    // ============================================================
-
     @Test
-    @DisplayName("13) ROJO - crearPostulante debe fallar si la oferta no existe")
-    void rojo_crearPostulante_debeFallarSiOfertaNoExiste() {
-        /*
-         * FASE ROJA del ciclo TDD.
-         * Comportamiento esperado: POST /api/postulantes con un ofertaId inexistente
-         * debe responder HTTP 400 Bad Request.
-         * Pendiente de implementar en fase VERDE.
-         */
-        Assertions.fail("Fase ROJA: pendiente implementar validacion de oferta inexistente en POST /api/postulantes.");
-    }
+    @DisplayName(" ROJO: Crear postulante debe fallar si nombre esta vacio")
+    void rojo_crearPostulante_debeFallarSiNombreEstaVacio() throws Exception {
+        // ==========================================================
+        // PARTE 1: PREPARAR (Given)
+        // ==========================================================
+        String postulanteJson = """
+            {
+                "nombre": "",
+                "email": "sin.nombre@correo.edu",
+                "telefono": "999111222",
+                "ofertaId": %d
+            }
+            """.formatted(ofertaBase.getId());
 
-    @Test
-    @DisplayName("14) VERDE - crearPostulante debe registrarse correctamente en la oferta")
-    void verde_crearPostulante_debeRegistrarseEnOferta() throws Exception {
-        PostulanteDTO dto = dtoValido("Ana Lopez");
+        // ==========================================================
+        // PARTE 2: EJECUTAR (When)
+        // ==========================================================
+        var resultado = mockMvc.perform(post("/api/postulantes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(postulanteJson));
 
-        mockMvc.perform(post("/api/postulantes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", notNullValue()))
-                .andExpect(jsonPath("$.nombre", is("Ana Lopez")))
-                .andExpect(jsonPath("$.ofertaId", is(ofertaBase.getId().intValue())));
+        // ==========================================================
+        // PARTE 3: VERIFICAR (Then)
+        // ==========================================================
+        resultado.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensaje").value("El nombre del postulante es obligatorio."));
     }
 
     @Test
-    @DisplayName("15) REFACTOR - crearPostulante debe iniciar siempre con estado POSTULADO")
-    void refactor_crearPostulante_debeIniciarConEstadoPostulado() throws Exception {
-        PostulanteDTO dto = dtoValido("Maria Salas");
-        // Aunque el cliente envie otro estado, el servicio debe forzar POSTULADO.
-        dto.setEstado("APROBADO");
+    @DisplayName(" VERDE: Crear postulante debe retornar postulante con nombre")
+    void verde_crearPostulante_debeRetornarPostulanteConNombre() throws Exception {
+        // ==========================================================
+        // PARTE 1: PREPARAR (Given)
+        // ==========================================================
+        String postulanteJson = """
+            {
+                "nombre": "Ana Lopez",
+                "email": "ana.lopez@correo.edu",
+                "telefono": "999111222",
+                "ofertaId": %d
+            }
+            """.formatted(ofertaBase.getId());
 
-        mockMvc.perform(post("/api/postulantes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.estado", is("POSTULADO")));
+        // ==========================================================
+        // PARTE 2: EJECUTAR (When)
+        // ==========================================================
+        var resultado = mockMvc.perform(post("/api/postulantes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(postulanteJson));
+
+        // ==========================================================
+        // PARTE 3: VERIFICAR (Then)
+        // ==========================================================
+        resultado.andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.nombre").value("Ana Lopez"));
     }
 
-    // ============================================================
-    //                            READ
-    // ============================================================
-
     @Test
-    @DisplayName("16) ROJO - listarPostulantes debe retornar vacio cuando no hay datos")
-    void rojo_listarPostulantes_debeRetornarVacioSiNoHayDatos() {
-        /*
-         * FASE ROJA del ciclo TDD.
-         * Comportamiento esperado: GET /api/postulantes debe responder 200 OK
-         * con un arreglo vacio cuando no hay postulantes en la base de datos.
-         * Pendiente de implementar en fase VERDE.
-         */
-        Assertions.fail("Fase ROJA: pendiente implementar listado vacio en GET /api/postulantes.");
+    @DisplayName(" REFACTOR: Crear postulante debe persistir con estado POSTULADO")
+    void refactor_crearPostulante_debePersistirConEstadoPostulado() throws Exception {
+        // ==========================================================
+        // PARTE 1: PREPARAR (Given)
+        // ==========================================================
+        String postulanteJson = """
+            {
+                "nombre": "Maria Salas",
+                "email": "maria.salas@correo.edu",
+                "telefono": "999333444",
+                "estado": "APROBADO",
+                "ofertaId": %d
+            }
+            """.formatted(ofertaBase.getId());
+
+        // ==========================================================
+        // PARTE 2: EJECUTAR (When)
+        // ==========================================================
+        var resultado = mockMvc.perform(post("/api/postulantes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(postulanteJson));
+
+        // ==========================================================
+        // PARTE 3: VERIFICAR (Then)
+        // ==========================================================
+        resultado.andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("POSTULADO"))
+                .andExpect(jsonPath("$.ofertaId").value(ofertaBase.getId()));
     }
 
     @Test
-    @DisplayName("17) VERDE - listarPostulantes debe retornar los postulantes existentes")
-    void verde_listarPostulantes_debeRetornarPostulantesExistentes() throws Exception {
-        guardarPostulanteDePrueba("Pedro Ruiz", EstadoPostulante.POSTULADO);
-        guardarPostulanteDePrueba("Lucia Diaz", EstadoPostulante.POSTULADO);
+    @DisplayName(" ROJO: Listar postulantes debe retornar lista vacia si no hay datos")
+    void rojo_listarPostulantes_debeRetornarListaVaciaSiNoHayDatos() throws Exception {
+        // ==========================================================
+        // PARTE 1: PREPARAR (Given)
+        // ==========================================================
+        // Solo existe una oferta base; no hay postulantes registrados.
 
-        mockMvc.perform(get("/api/postulantes"))
-                .andExpect(status().isOk())
+        // ==========================================================
+        // PARTE 2: EJECUTAR (When)
+        // ==========================================================
+        var resultado = mockMvc.perform(get("/api/postulantes"));
+
+        // ==========================================================
+        // PARTE 3: VERIFICAR (Then)
+        // ==========================================================
+        resultado.andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName(" VERDE: Listar postulantes debe retornar lista con postulantes")
+    void verde_listarPostulantes_debeRetornarListaConPostulantes() throws Exception {
+        // ==========================================================
+        // PARTE 1: PREPARAR (Given)
+        // ==========================================================
+        guardarPostulante("Pedro Ruiz", "999000111", EstadoPostulante.POSTULADO);
+        guardarPostulante("Lucia Diaz", "999000222", EstadoPostulante.POSTULADO);
+
+        // ==========================================================
+        // PARTE 2: EJECUTAR (When)
+        // ==========================================================
+        var resultado = mockMvc.perform(get("/api/postulantes"));
+
+        // ==========================================================
+        // PARTE 3: VERIFICAR (Then)
+        // ==========================================================
+        resultado.andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[*].nombre",
                         containsInAnyOrder("Pedro Ruiz", "Lucia Diaz")));
     }
 
     @Test
-    @DisplayName("18) REFACTOR - obtenerPostulantePorId debe retornar un detalle claro")
-    void refactor_obtenerPostulantePorId_debeRetornarDetalleClaro() throws Exception {
-        Postulante guardado = guardarPostulanteDePrueba("Carlos Vega", EstadoPostulante.POSTULADO);
+    @DisplayName(" REFACTOR: Buscar postulante por id debe retornar postulante correcto")
+    void refactor_buscarPostulantePorId_debeRetornarPostulanteCorrecto() throws Exception {
+        // ==========================================================
+        // PARTE 1: PREPARAR (Given)
+        // ==========================================================
+        Postulante postulante = guardarPostulante("Carlos Vega", "999000333", EstadoPostulante.POSTULADO);
 
-        mockMvc.perform(get("/api/postulantes/{id}", guardado.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(guardado.getId().intValue())))
-                .andExpect(jsonPath("$.nombre", is("Carlos Vega")))
-                .andExpect(jsonPath("$.email", is("carlos.vega@talento.edu")))
-                .andExpect(jsonPath("$.estado", is("POSTULADO")))
-                .andExpect(jsonPath("$.ofertaId", is(ofertaBase.getId().intValue())));
-    }
+        // ==========================================================
+        // PARTE 2: EJECUTAR (When)
+        // ==========================================================
+        var resultado = mockMvc.perform(get("/api/postulantes/{id}", postulante.getId()));
 
-    // ============================================================
-    //                           UPDATE
-    // ============================================================
-
-    @Test
-    @DisplayName("19) ROJO - actualizarPostulante debe fallar si no existe")
-    void rojo_actualizarPostulante_debeFallarSiNoExiste() {
-        /*
-         * FASE ROJA del ciclo TDD.
-         * Comportamiento esperado: PUT /api/postulantes/{id} con un id inexistente
-         * debe responder HTTP 404 Not Found.
-         * Pendiente de implementar en fase VERDE.
-         */
-        Assertions.fail("Fase ROJA: pendiente implementar PUT /api/postulantes/{id} con manejo de 404.");
+        // ==========================================================
+        // PARTE 3: VERIFICAR (Then)
+        // ==========================================================
+        resultado.andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(postulante.getId()))
+                .andExpect(jsonPath("$.nombre").value("Carlos Vega"))
+                .andExpect(jsonPath("$.estado").value("POSTULADO"));
     }
 
     @Test
-    @DisplayName("20) VERDE - actualizarPostulante debe modificar sus datos")
-    void verde_actualizarPostulante_debeModificarDatos() throws Exception {
-        Postulante original = guardarPostulanteDePrueba("Jose Sanchez", EstadoPostulante.POSTULADO);
+    @DisplayName(" ROJO: Actualizar postulante debe fallar si no existe")
+    void rojo_actualizarPostulante_debeFallarSiNoExiste() throws Exception {
+        // ==========================================================
+        // PARTE 1: PREPARAR (Given)
+        // ==========================================================
+        String cambiosJson = """
+            {
+                "telefono": "999999999"
+            }
+            """;
 
-        PostulanteDTO cambios = new PostulanteDTO();
-        cambios.setNombre("Jose Sanchez Editado");
-        cambios.setEmail("jose.editado@talento.edu");
-        cambios.setTelefono("999333444");
+        // ==========================================================
+        // PARTE 2: EJECUTAR (When)
+        // ==========================================================
+        var resultado = mockMvc.perform(put("/api/postulantes/{id}", 99999L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(cambiosJson));
 
-        mockMvc.perform(put("/api/postulantes/{id}", original.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(cambios)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(original.getId().intValue())))
-                .andExpect(jsonPath("$.nombre", is("Jose Sanchez Editado")))
-                .andExpect(jsonPath("$.email", is("jose.editado@talento.edu")));
+        // ==========================================================
+        // PARTE 3: VERIFICAR (Then)
+        // ==========================================================
+        resultado.andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.mensaje").value("Postulante no encontrado con id 99999"));
     }
 
     @Test
-    @DisplayName("21) REFACTOR - actualizarPostulante debe permitir actualizar el estado")
+    @DisplayName(" VERDE: Actualizar postulante debe cambiar telefono")
+    void verde_actualizarPostulante_debeCambiarTelefono() throws Exception {
+        // ==========================================================
+        // PARTE 1: PREPARAR (Given)
+        // ==========================================================
+        Postulante postulante = guardarPostulante("Jose Sanchez", "999000444", EstadoPostulante.POSTULADO);
+        String cambiosJson = """
+            {
+                "telefono": "988777666"
+            }
+            """;
+
+        // ==========================================================
+        // PARTE 2: EJECUTAR (When)
+        // ==========================================================
+        var resultado = mockMvc.perform(put("/api/postulantes/{id}", postulante.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(cambiosJson));
+
+        // ==========================================================
+        // PARTE 3: VERIFICAR (Then)
+        // ==========================================================
+        resultado.andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(postulante.getId()))
+                .andExpect(jsonPath("$.telefono").value("988777666"));
+    }
+
+    @Test
+    @DisplayName(" REFACTOR: Actualizar postulante debe actualizar estado")
     void refactor_actualizarPostulante_debeActualizarEstado() throws Exception {
-        Postulante original = guardarPostulanteDePrueba("Sara Rojas", EstadoPostulante.POSTULADO);
+        // ==========================================================
+        // PARTE 1: PREPARAR (Given)
+        // ==========================================================
+        Postulante postulante = guardarPostulante("Sara Rojas", "999000555", EstadoPostulante.POSTULADO);
+        String cambiosJson = """
+            {
+                "estado": "APROBADO"
+            }
+            """;
 
-        PostulanteDTO cambios = new PostulanteDTO();
-        cambios.setEstado("APROBADO");
+        // ==========================================================
+        // PARTE 2: EJECUTAR (When)
+        // ==========================================================
+        var resultado = mockMvc.perform(put("/api/postulantes/{id}", postulante.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(cambiosJson));
 
-        mockMvc.perform(put("/api/postulantes/{id}", original.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(cambios)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.estado", is("APROBADO")))
-                .andExpect(jsonPath("$.aprobado", is(true)));
-    }
-
-    // ============================================================
-    //                           DELETE
-    // ============================================================
-
-    @Test
-    @DisplayName("22) ROJO - eliminarPostulante debe fallar si no existe")
-    void rojo_eliminarPostulante_debeFallarSiNoExiste() {
-        /*
-         * FASE ROJA del ciclo TDD.
-         * Comportamiento esperado: DELETE /api/postulantes/{id} con un id inexistente
-         * debe responder HTTP 404 Not Found.
-         * Pendiente de implementar en fase VERDE.
-         */
-        Assertions.fail("Fase ROJA: pendiente implementar DELETE /api/postulantes/{id} con manejo de 404.");
+        // ==========================================================
+        // PARTE 3: VERIFICAR (Then)
+        // ==========================================================
+        resultado.andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("APROBADO"))
+                .andExpect(jsonPath("$.aprobado").value(true));
     }
 
     @Test
-    @DisplayName("23) VERDE - eliminarPostulante debe eliminar uno existente")
-    void verde_eliminarPostulante_debeEliminarExistente() throws Exception {
-        Postulante postulante = guardarPostulanteDePrueba("Luis Mora", EstadoPostulante.POSTULADO);
+    @DisplayName(" ROJO: Eliminar postulante debe fallar si no existe")
+    void rojo_eliminarPostulante_debeFallarSiNoExiste() throws Exception {
+        // ==========================================================
+        // PARTE 1: PREPARAR (Given)
+        // ==========================================================
+        // No se crea un postulante con el id 99999.
 
+        // ==========================================================
+        // PARTE 2: EJECUTAR (When)
+        // ==========================================================
+        var resultado = mockMvc.perform(delete("/api/postulantes/{id}", 99999L));
+
+        // ==========================================================
+        // PARTE 3: VERIFICAR (Then)
+        // ==========================================================
+        resultado.andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.mensaje").value("Postulante no encontrado con id 99999"));
+    }
+
+    @Test
+    @DisplayName(" VERDE: Eliminar postulante debe eliminar postulante existente")
+    void verde_eliminarPostulante_debeEliminarPostulanteExistente() throws Exception {
+        // ==========================================================
+        // PARTE 1: PREPARAR (Given)
+        // ==========================================================
+        Postulante postulante = guardarPostulante("Luis Mora", "999000666", EstadoPostulante.POSTULADO);
+
+        // ==========================================================
+        // PARTE 2: EJECUTAR (When)
+        // ==========================================================
+        var resultado = mockMvc.perform(delete("/api/postulantes/{id}", postulante.getId()));
+
+        // ==========================================================
+        // PARTE 3: VERIFICAR (Then)
+        // ==========================================================
+        resultado.andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName(" REFACTOR: Eliminar postulante debe no aparecer en activos")
+    void refactor_eliminarPostulante_debeNoAparecerEnActivos() throws Exception {
+        // ==========================================================
+        // PARTE 1: PREPARAR (Given)
+        // ==========================================================
+        Postulante postulante = guardarPostulante("Diego Paz", "999000777", EstadoPostulante.POSTULADO);
+
+        // ==========================================================
+        // PARTE 2: EJECUTAR (When)
+        // ==========================================================
         mockMvc.perform(delete("/api/postulantes/{id}", postulante.getId()))
                 .andExpect(status().isNoContent());
-    }
+        var resultado = mockMvc.perform(get("/api/postulantes/activos"));
 
-    @Test
-    @DisplayName("24) REFACTOR - postulante eliminado debe salir del listado de activos")
-    void refactor_eliminarPostulante_debeMoverAHistorialOSalirDeActivos() throws Exception {
-        Postulante activo = guardarPostulanteDePrueba("Diego Paz", EstadoPostulante.POSTULADO);
-
-        // Confirmamos que aparece en /activos antes de eliminarlo.
-        mockMvc.perform(get("/api/postulantes/activos"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[?(@.id == " + activo.getId() + ")]", hasSize(1)));
-
-        mockMvc.perform(delete("/api/postulantes/{id}", activo.getId()))
-                .andExpect(status().isNoContent());
-
-        // Tras eliminarlo, ya no debe aparecer entre los activos.
-        mockMvc.perform(get("/api/postulantes/activos"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[?(@.id == " + activo.getId() + ")]", hasSize(0)));
+        // ==========================================================
+        // PARTE 3: VERIFICAR (Then)
+        // ==========================================================
+        resultado.andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.id == " + postulante.getId() + ")]", hasSize(0)));
     }
 }
