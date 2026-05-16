@@ -6,18 +6,24 @@ import edu.reclutamiento.talentoacademico.model.Area;
 import edu.reclutamiento.talentoacademico.model.OfertaLaboral;
 import edu.reclutamiento.talentoacademico.repository.AreaRepository;
 import edu.reclutamiento.talentoacademico.repository.OfertaRepository;
+import edu.reclutamiento.talentoacademico.repository.PostulanteRepository;
 import edu.reclutamiento.talentoacademico.service.OfertaService;
 import java.util.List;
+import java.util.NoSuchElementException;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OfertaServiceImpl implements OfertaService {
     private final OfertaRepository ofertaRepository;
     private final AreaRepository areaRepository;
+    private final PostulanteRepository postulanteRepository;
 
-    public OfertaServiceImpl(OfertaRepository ofertaRepository, AreaRepository areaRepository) {
+    public OfertaServiceImpl(OfertaRepository ofertaRepository,
+                             AreaRepository areaRepository,
+                             PostulanteRepository postulanteRepository) {
         this.ofertaRepository = ofertaRepository;
         this.areaRepository = areaRepository;
+        this.postulanteRepository = postulanteRepository;
     }
 
     public List<OfertaDTO> listar() {
@@ -33,6 +39,7 @@ public class OfertaServiceImpl implements OfertaService {
     }
 
     public OfertaDTO guardar(OfertaDTO dto) {
+        validar(dto);
         OfertaLaboral oferta = new OfertaLaboral();
         oferta.setId(dto.getId());
         oferta.setTitulo(dto.getTitulo());
@@ -46,15 +53,57 @@ public class OfertaServiceImpl implements OfertaService {
         return OfertaMapper.toDTO(ofertaRepository.save(oferta));
     }
 
+    public OfertaDTO actualizar(Long id, OfertaDTO dto) {
+        OfertaLaboral oferta = ofertaRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Oferta no encontrada con id " + id));
+        validar(dto);
+        oferta.setTitulo(dto.getTitulo());
+        oferta.setDescripcion(dto.getDescripcion());
+        oferta.setVacantes(dto.getVacantes());
+        if (dto.getActiva() != null) {
+            oferta.setActiva(dto.getActiva());
+        }
+        if (dto.getAreaId() != null) {
+            Area area = areaRepository.findById(dto.getAreaId()).orElse(null);
+            oferta.setArea(area);
+        }
+        return OfertaMapper.toDTO(ofertaRepository.save(oferta));
+    }
+
     public void activar(Long id) {
-        OfertaLaboral oferta = ofertaRepository.findById(id).orElseThrow();
+        OfertaLaboral oferta = ofertaRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Oferta no encontrada con id " + id));
         oferta.setActiva(true);
         ofertaRepository.save(oferta);
     }
 
     public void eliminar(Long id) {
-        OfertaLaboral oferta = ofertaRepository.findById(id).orElseThrow();
+        OfertaLaboral oferta = ofertaRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Oferta no encontrada con id " + id));
         oferta.setActiva(false);
         ofertaRepository.save(oferta);
+    }
+
+    public void eliminarReal(Long id) {
+        if (!ofertaRepository.existsById(id)) {
+            throw new NoSuchElementException("Oferta no encontrada con id " + id);
+        }
+        // Limpiar primero los postulantes asociados para no violar la FK.
+        postulanteRepository.findAll().stream()
+                .filter(p -> p.getOferta() != null && id.equals(p.getOferta().getId()))
+                .forEach(p -> postulanteRepository.deleteById(p.getId()));
+        ofertaRepository.deleteById(id);
+    }
+
+    private void validar(OfertaDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("La oferta no puede ser nula.");
+        }
+        if (dto.getTitulo() == null || dto.getTitulo().isBlank()) {
+            throw new IllegalArgumentException("El titulo es obligatorio.");
+        }
+        if (dto.getVacantes() == null || dto.getVacantes() <= 0) {
+            throw new IllegalArgumentException("Las vacantes deben ser mayores a 0.");
+        }
     }
 }

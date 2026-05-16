@@ -11,7 +11,10 @@ public interface PostulanteService {
     List<PostulanteDTO> listarPorUsuario(Long usuarioId);
     PostulanteDTO buscar(Long id);
     PostulanteDTO postular(PostulanteDTO dto, Long usuarioId);
+    PostulanteDTO crear(PostulanteDTO dto);
     PostulanteDTO actualizar(PostulanteDTO dto);
+    PostulanteDTO actualizarPostulante(Long id, PostulanteDTO dto);
+    void eliminarReal(Long id);
     boolean yaPostulo(Long usuarioId, Long ofertaId);
     long contarPorUsuario(Long usuarioId);
     long contarPorUsuarioYEstado(Long usuarioId, String estado);
