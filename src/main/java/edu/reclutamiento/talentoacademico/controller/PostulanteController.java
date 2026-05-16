@@ -3,6 +3,7 @@ package edu.reclutamiento.talentoacademico.controller;
 import edu.reclutamiento.talentoacademico.dto.PostulanteDTO;
 import edu.reclutamiento.talentoacademico.service.OfertaService;
 import edu.reclutamiento.talentoacademico.service.PostulanteService;
+import edu.reclutamiento.talentoacademico.service.UsuarioService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,10 +17,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class PostulanteController {
     private final PostulanteService postulanteService;
     private final OfertaService ofertaService;
+    private final UsuarioService usuarioService;
 
-    public PostulanteController(PostulanteService postulanteService, OfertaService ofertaService) {
+    public PostulanteController(PostulanteService postulanteService, OfertaService ofertaService, UsuarioService usuarioService) {
         this.postulanteService = postulanteService;
         this.ofertaService = ofertaService;
+        this.usuarioService = usuarioService;
     }
 
     @GetMapping("/ofertas/{id}/postular")
@@ -78,7 +81,39 @@ public class PostulanteController {
     public String adminPostulantes(Model model) {
         model.addAttribute("activos", postulanteService.listarActivos());
         model.addAttribute("historial", postulanteService.listarHistorial());
+        model.addAttribute("usuarios", usuarioService.listarPostulantes());
+        model.addAttribute("ofertas", ofertaService.listarActivas());
+        model.addAttribute("postulante", new PostulanteDTO());
         return "admin/postulantes";
+    }
+
+    @GetMapping("/admin/postulantes/editar/{id}")
+    public String editarPostulanteAdmin(@PathVariable Long id, Model model) {
+        model.addAttribute("activos", postulanteService.listarActivos());
+        model.addAttribute("historial", postulanteService.listarHistorial());
+        model.addAttribute("usuarios", usuarioService.listarPostulantes());
+        model.addAttribute("ofertas", ofertaService.listarActivas());
+        model.addAttribute("postulante", postulanteService.buscar(id));
+        return "admin/postulantes";
+    }
+
+    @PostMapping("/admin/postulantes")
+    public String registrarPostulanteAdmin(@ModelAttribute PostulanteDTO postulante, Model model) {
+        try {
+            if (postulante.getId() == null) {
+                postulanteService.postular(postulante, postulante.getUsuarioId());
+            } else {
+                postulanteService.actualizar(postulante);
+            }
+            return "redirect:/admin/postulantes";
+        } catch (IllegalStateException ex) {
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("activos", postulanteService.listarActivos());
+            model.addAttribute("historial", postulanteService.listarHistorial());
+            model.addAttribute("usuarios", usuarioService.listarPostulantes());
+            model.addAttribute("ofertas", ofertaService.listarActivas());
+            return "admin/postulantes";
+        }
     }
 
     @GetMapping("/admin/postulantes/aprobar/{id}")
@@ -96,6 +131,12 @@ public class PostulanteController {
     @GetMapping("/admin/postulantes/finalizar/{id}")
     public String finalizar(@PathVariable Long id) {
         postulanteService.finalizar(id);
+        return "redirect:/admin/postulantes";
+    }
+
+    @GetMapping("/admin/postulantes/estado/{id}/{estado}")
+    public String cambiarEstado(@PathVariable Long id, @PathVariable String estado) {
+        postulanteService.cambiarEstado(id, estado);
         return "redirect:/admin/postulantes";
     }
 }

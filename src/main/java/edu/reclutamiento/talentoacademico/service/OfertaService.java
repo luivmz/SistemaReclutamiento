@@ -8,5 +8,6 @@ public interface OfertaService {
     List<OfertaDTO> listarActivas();
     OfertaDTO buscar(Long id);
     OfertaDTO guardar(OfertaDTO dto);
+    void activar(Long id);
     void eliminar(Long id);
 }

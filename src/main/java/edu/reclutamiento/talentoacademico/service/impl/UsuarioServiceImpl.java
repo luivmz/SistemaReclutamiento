@@ -2,6 +2,7 @@ package edu.reclutamiento.talentoacademico.service.impl;
 
 import edu.reclutamiento.talentoacademico.dto.UsuarioDTO;
 import edu.reclutamiento.talentoacademico.mapper.UsuarioMapper;
+import edu.reclutamiento.talentoacademico.model.RolUsuario;
 import edu.reclutamiento.talentoacademico.model.Usuario;
 import edu.reclutamiento.talentoacademico.repository.UsuarioRepository;
 import edu.reclutamiento.talentoacademico.service.UsuarioService;
@@ -21,12 +22,26 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarioRepository.findAll().stream().map(UsuarioMapper::toDTO).toList();
     }
 
+    public List<UsuarioDTO> listarPostulantes() {
+        return usuarioRepository.findByRolAndActivoTrue(RolUsuario.POSTULANTE).stream().map(UsuarioMapper::toDTO).toList();
+    }
+
+    public UsuarioDTO buscar(Long id) {
+        return usuarioRepository.findById(id).map(UsuarioMapper::toDTO).orElse(new UsuarioDTO());
+    }
+
     public UsuarioDTO guardar(UsuarioDTO dto) {
         return UsuarioMapper.toDTO(usuarioRepository.save(UsuarioMapper.toEntity(dto)));
     }
 
     public void eliminar(Long id) {
-        usuarioRepository.deleteById(id);
+        cambiarActivo(id, false);
+    }
+
+    public void cambiarActivo(Long id, boolean activo) {
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow();
+        usuario.setActivo(activo);
+        usuarioRepository.save(usuario);
     }
 
     public Optional<Usuario> login(String email, String password) {

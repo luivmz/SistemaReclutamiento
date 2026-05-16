@@ -1,45 +1,5 @@
-# Talento Academico
+# GRUPO 1
+# Credenciales demo:
 
-Sistema academico simple de reclutamiento con Spring Boot, Spring MVC, JSP, JPA y H2 en memoria.
-
-## Ejecucion
-
-El proyecto no requiere MySQL local. La base H2 en memoria se crea al iniciar usando:
-
-- `src/main/resources/schema.sql`
-- `src/main/resources/data.sql`
-
-Ejecutar:
-
-```bash
-mvn spring-boot:run
-```
-
-Aplicacion:
-
-```text
-http://localhost:8086
-```
-
-Consola H2:
-
-```text
-http://localhost:8086/h2-console
-```
-
-Datos de conexion H2:
-
-```text
-JDBC URL: jdbc:h2:mem:reclutamiento_db
-User: sa
-Password:
-```
-
-Credenciales demo:
-
-- Admin: `admin@talento.edu` / `123456`
-- Postulante: `postulante@talento.edu` / `123456`
-
-## Enfoque
-
-El proyecto usa JSP, formularios tradicionales, entidades JPA y repositorios Spring Data. La configuracion actual esta orientada a desarrollo academico y pruebas TDD futuras con H2. Para migrar a MySQL despues, se debe agregar nuevamente el driver MySQL y cambiar las propiedades del datasource.
+# - Admin: `admin@talento.edu` / `123456`
+# - Postulante: `postulante@talento.edu` / `123456`

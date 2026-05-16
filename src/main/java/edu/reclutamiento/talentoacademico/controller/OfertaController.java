@@ -69,6 +69,14 @@ public class OfertaController {
         return "admin/ofertas-admin";
     }
 
+    @GetMapping("/admin/ofertas/editar/{id}")
+    public String editarOferta(@PathVariable Long id, Model model) {
+        model.addAttribute("ofertas", ofertaService.listar());
+        model.addAttribute("areas", areaService.listar());
+        model.addAttribute("oferta", ofertaService.buscar(id));
+        return "admin/ofertas-admin";
+    }
+
     @PostMapping("/admin/ofertas")
     public String guardarOferta(@ModelAttribute OfertaDTO oferta) {
         ofertaService.guardar(oferta);
@@ -78,6 +86,12 @@ public class OfertaController {
     @RequestMapping("/admin/ofertas/eliminar/{id}")
     public String eliminarOferta(@PathVariable Long id) {
         ofertaService.eliminar(id);
+        return "redirect:/admin/ofertas";
+    }
+
+    @RequestMapping("/admin/ofertas/activar/{id}")
+    public String activarOferta(@PathVariable Long id) {
+        ofertaService.activar(id);
         return "redirect:/admin/ofertas";
     }
 }

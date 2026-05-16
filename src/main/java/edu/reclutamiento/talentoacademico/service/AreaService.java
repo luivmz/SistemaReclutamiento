@@ -5,5 +5,7 @@ import java.util.List;
 
 public interface AreaService {
     List<Area> listar();
+    Area buscar(Long id);
     Area guardar(Area area);
+    void eliminar(Long id);
 }

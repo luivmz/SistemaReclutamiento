@@ -27,6 +27,11 @@ public class PreguntaServiceImpl implements PreguntaService {
         return preguntaRepository.findAll().stream().map(this::toDTO).toList();
     }
 
+    @Transactional(readOnly = true)
+    public PreguntaDTO buscar(Long id) {
+        return preguntaRepository.findById(id).map(this::toDTO).orElse(new PreguntaDTO());
+    }
+
     public PreguntaDTO guardar(PreguntaDTO dto) {
         Pregunta pregunta = new Pregunta();
         pregunta.setId(dto.getId());
@@ -36,6 +41,10 @@ public class PreguntaServiceImpl implements PreguntaService {
             pregunta.setOfertas(new LinkedHashSet<>(ofertaRepository.findAllById(dto.getOfertaIds())));
         }
         return toDTO(preguntaRepository.save(pregunta));
+    }
+
+    public void eliminar(Long id) {
+        preguntaRepository.deleteById(id);
     }
 
     private PreguntaDTO toDTO(Pregunta pregunta) {

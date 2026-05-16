@@ -46,7 +46,15 @@ public class OfertaServiceImpl implements OfertaService {
         return OfertaMapper.toDTO(ofertaRepository.save(oferta));
     }
 
+    public void activar(Long id) {
+        OfertaLaboral oferta = ofertaRepository.findById(id).orElseThrow();
+        oferta.setActiva(true);
+        ofertaRepository.save(oferta);
+    }
+
     public void eliminar(Long id) {
-        ofertaRepository.deleteById(id);
+        OfertaLaboral oferta = ofertaRepository.findById(id).orElseThrow();
+        oferta.setActiva(false);
+        ofertaRepository.save(oferta);
     }
 }

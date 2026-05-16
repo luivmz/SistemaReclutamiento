@@ -10,9 +10,10 @@
 <main class="admin-content">
     <h2 class="page-title">Ofertas</h2>
     <form method="post" action="/admin/ofertas" class="card">
-        <label>Titulo</label><input name="titulo" required>
-        <label>Descripcion</label><textarea name="descripcion"></textarea>
-        <label>Vacantes</label><input type="number" name="vacantes" value="1">
+        <input type="hidden" name="id" value="${oferta.id}">
+        <label>Titulo</label><input name="titulo" value="${oferta.titulo}" required>
+        <label>Descripcion</label><textarea name="descripcion">${oferta.descripcion}</textarea>
+        <label>Vacantes</label><input type="number" name="vacantes" value="${oferta.vacantes == null ? 1 : oferta.vacantes}">
         <label>Area</label>
         <select name="areaId">
             <c:forEach var="area" items="${areas}">
@@ -21,13 +22,18 @@
         </select>
         <label>Activa</label><select name="activa"><option value="true">Si</option><option value="false">No</option></select>
         <button type="submit">Guardar</button>
+        <a class="btn secundario" href="/admin/ofertas">Nuevo</a>
     </form>
     <table>
-        <tr><th>Titulo</th><th>Area</th><th>Vacantes</th><th>Activa</th><th>Accion</th></tr>
+        <tr><th>Titulo</th><th>Area</th><th>Vacantes</th><th>Activa</th><th>Acciones</th></tr>
         <c:forEach var="o" items="${ofertas}">
             <tr>
                 <td>${o.titulo}</td><td>${o.areaNombre}</td><td>${o.vacantes}</td><td>${o.activa}</td>
-                <td><a class="btn secundario" href="/admin/ofertas/eliminar/${o.id}">Eliminar</a></td>
+                <td>
+                    <a class="btn" href="/admin/ofertas/editar/${o.id}">Editar</a>
+                    <a class="btn secundario" href="/admin/ofertas/eliminar/${o.id}">Desactivar</a>
+                    <a class="btn" href="/admin/ofertas/activar/${o.id}">Activar</a>
+                </td>
             </tr>
         </c:forEach>
     </table>

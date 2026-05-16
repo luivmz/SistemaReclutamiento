@@ -27,11 +27,19 @@ public class EntrevistaServiceImpl implements EntrevistaService {
         return entrevistaRepository.findByPostulanteId(postulanteId).stream().map(EntrevistaMapper::toDTO).toList();
     }
 
+    public EntrevistaDTO buscar(Long id) {
+        return entrevistaRepository.findById(id).map(EntrevistaMapper::toDTO).orElse(new EntrevistaDTO());
+    }
+
     public EntrevistaDTO guardar(EntrevistaDTO dto) {
         Entrevista entrevista = EntrevistaMapper.toEntity(dto);
         if (dto.getPostulanteId() != null) {
             entrevista.setPostulante(postulanteRepository.findById(dto.getPostulanteId()).orElse(null));
         }
         return EntrevistaMapper.toDTO(entrevistaRepository.save(entrevista));
+    }
+
+    public void eliminar(Long id) {
+        entrevistaRepository.deleteById(id);
     }
 }

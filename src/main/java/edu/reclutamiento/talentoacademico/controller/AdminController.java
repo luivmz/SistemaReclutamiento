@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
@@ -46,9 +47,28 @@ public class AdminController {
         return "admin/usuarios";
     }
 
+    @GetMapping("/admin/usuarios/editar/{id}")
+    public String editarUsuario(@PathVariable Long id, Model model) {
+        model.addAttribute("usuarios", usuarioService.listar());
+        model.addAttribute("usuario", usuarioService.buscar(id));
+        return "admin/usuarios";
+    }
+
     @PostMapping("/admin/usuarios")
     public String guardarUsuario(@ModelAttribute UsuarioDTO usuario) {
         usuarioService.guardar(usuario);
+        return "redirect:/admin/usuarios";
+    }
+
+    @GetMapping("/admin/usuarios/desactivar/{id}")
+    public String desactivarUsuario(@PathVariable Long id) {
+        usuarioService.cambiarActivo(id, false);
+        return "redirect:/admin/usuarios";
+    }
+
+    @GetMapping("/admin/usuarios/activar/{id}")
+    public String activarUsuario(@PathVariable Long id) {
+        usuarioService.cambiarActivo(id, true);
         return "redirect:/admin/usuarios";
     }
 
@@ -59,9 +79,22 @@ public class AdminController {
         return "admin/areas";
     }
 
+    @GetMapping("/admin/areas/editar/{id}")
+    public String editarArea(@PathVariable Long id, Model model) {
+        model.addAttribute("areas", areaService.listar());
+        model.addAttribute("area", areaService.buscar(id));
+        return "admin/areas";
+    }
+
     @PostMapping("/admin/areas")
     public String guardarArea(@ModelAttribute Area area) {
         areaService.guardar(area);
+        return "redirect:/admin/areas";
+    }
+
+    @GetMapping("/admin/areas/eliminar/{id}")
+    public String eliminarArea(@PathVariable Long id) {
+        areaService.eliminar(id);
         return "redirect:/admin/areas";
     }
 
@@ -73,9 +106,23 @@ public class AdminController {
         return "admin/entrevistas";
     }
 
+    @GetMapping("/admin/entrevistas/editar/{id}")
+    public String editarEntrevista(@PathVariable Long id, Model model) {
+        model.addAttribute("entrevistas", entrevistaService.listar());
+        model.addAttribute("postulantes", postulanteService.listarActivos());
+        model.addAttribute("entrevista", entrevistaService.buscar(id));
+        return "admin/entrevistas";
+    }
+
     @PostMapping("/admin/entrevistas")
     public String guardarEntrevista(@ModelAttribute EntrevistaDTO entrevista) {
         entrevistaService.guardar(entrevista);
+        return "redirect:/admin/entrevistas";
+    }
+
+    @GetMapping("/admin/entrevistas/eliminar/{id}")
+    public String eliminarEntrevista(@PathVariable Long id) {
+        entrevistaService.eliminar(id);
         return "redirect:/admin/entrevistas";
     }
 
@@ -87,9 +134,23 @@ public class AdminController {
         return "admin/preguntas";
     }
 
+    @GetMapping("/admin/preguntas/editar/{id}")
+    public String editarPregunta(@PathVariable Long id, Model model) {
+        model.addAttribute("preguntas", preguntaService.listar());
+        model.addAttribute("ofertas", ofertaService.listar());
+        model.addAttribute("pregunta", preguntaService.buscar(id));
+        return "admin/preguntas";
+    }
+
     @PostMapping("/admin/preguntas")
     public String guardarPregunta(@ModelAttribute PreguntaDTO pregunta) {
         preguntaService.guardar(pregunta);
+        return "redirect:/admin/preguntas";
+    }
+
+    @GetMapping("/admin/preguntas/eliminar/{id}")
+    public String eliminarPregunta(@PathVariable Long id) {
+        preguntaService.eliminar(id);
         return "redirect:/admin/preguntas";
     }
 }

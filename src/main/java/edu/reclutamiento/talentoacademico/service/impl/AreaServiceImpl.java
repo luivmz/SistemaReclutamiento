@@ -18,7 +18,15 @@ public class AreaServiceImpl implements AreaService {
         return areaRepository.findAll();
     }
 
+    public Area buscar(Long id) {
+        return areaRepository.findById(id).orElse(new Area());
+    }
+
     public Area guardar(Area area) {
         return areaRepository.save(area);
+    }
+
+    public void eliminar(Long id) {
+        areaRepository.deleteById(id);
     }
 }

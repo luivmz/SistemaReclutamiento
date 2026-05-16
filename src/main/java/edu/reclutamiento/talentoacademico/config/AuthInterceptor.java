@@ -24,7 +24,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         if (path.matches("/ofertas/\\d+/postular") && rol == null) {
-            response.sendRedirect("/login?mensaje=Debes iniciar sesion o crear una cuenta para postular.");
+            response.sendRedirect("/login?mensaje=Debes%20iniciar%20sesion%20o%20crear%20una%20cuenta%20para%20postular.");
             return false;
         }
 

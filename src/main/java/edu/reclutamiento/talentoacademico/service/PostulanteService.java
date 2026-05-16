@@ -17,6 +17,7 @@ public interface PostulanteService {
     long contarPorUsuarioYEstado(Long usuarioId, String estado);
     void marcarEnEvaluacion(Long id);
     void registrarEvaluacion(Long id, int puntaje, boolean aprobado);
+    void cambiarEstado(Long id, String estado);
     void aprobar(Long id);
     void rechazar(Long id);
     void finalizar(Long id);

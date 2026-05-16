@@ -60,6 +60,7 @@ public class PostulanteServiceImpl implements PostulanteService {
         if (dto.getOfertaId() != null && yaPostulo(usuarioId, dto.getOfertaId())) {
             throw new IllegalStateException("Ya postulaste a esta oferta.");
         }
+        dto.setId(null);
         Postulante postulante = PostulanteMapper.toEntity(dto);
         postulante.setEstado(EstadoPostulante.POSTULADO);
         postulante.setAprobado(false);
@@ -75,7 +76,20 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
     public PostulanteDTO actualizar(PostulanteDTO dto) {
-        Postulante postulante = PostulanteMapper.toEntity(dto);
+        Postulante postulante = postulanteRepository.findById(dto.getId()).orElseThrow();
+        postulante.setNombre(dto.getNombre());
+        postulante.setEmail(dto.getEmail());
+        postulante.setTelefono(dto.getTelefono());
+        postulante.setExperiencia(dto.getExperiencia());
+        postulante.setHabilidades(dto.getHabilidades());
+        postulante.setCv(dto.getCv());
+        postulante.setObservacion(dto.getObservacion());
+        if (dto.getPuntaje() != null) {
+            postulante.setPuntaje(dto.getPuntaje());
+        }
+        if (dto.getEstado() != null && !dto.getEstado().isBlank()) {
+            postulante.setEstado(EstadoPostulante.valueOf(dto.getEstado()));
+        }
         asignarOferta(dto, postulante);
         return PostulanteMapper.toDTO(postulanteRepository.save(postulante));
     }
@@ -114,6 +128,14 @@ public class PostulanteServiceImpl implements PostulanteService {
         postulante.setAprobado(aprobado);
         postulante.setEstado(aprobado ? EstadoPostulante.APROBADO : EstadoPostulante.RECHAZADO);
         postulante.setObservacion(aprobado ? "Evaluacion aprobada." : "Evaluacion desaprobada.");
+        postulanteRepository.save(postulante);
+    }
+
+    public void cambiarEstado(Long id, String estado) {
+        EstadoPostulante nuevoEstado = EstadoPostulante.valueOf(estado);
+        Postulante postulante = postulanteRepository.findById(id).orElseThrow();
+        postulante.setEstado(nuevoEstado);
+        postulante.setAprobado(nuevoEstado == EstadoPostulante.APROBADO);
         postulanteRepository.save(postulante);
     }
 
