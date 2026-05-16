@@ -1,0 +1,20 @@
+<%@ page contentType="text/html;charset=UTF-8" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registro</title>
+    <link rel="stylesheet" href="/resources/css/style.css">
+</head>
+<body>
+<header><h1>Talento Academico</h1><nav><a href="/">Inicio</a><a href="/login">Login</a></nav></header>
+<main>
+    <h2>Registro de postulante</h2>
+    <form method="post" action="/registro" class="card">
+        <label>Nombre</label><input name="nombre" required>
+        <label>Email</label><input type="email" name="email" required>
+        <label>Password</label><input type="password" name="password" required>
+        <button type="submit">Registrar</button>
+    </form>
+</main>
+</body>
+</html>
