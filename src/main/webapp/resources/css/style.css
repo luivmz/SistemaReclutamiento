@@ -5,22 +5,48 @@ body {
     color: #2b2135;
 }
 
-header {
+.site-header {
     background: #5b2a86;
     color: white;
-    padding: 16px 32px;
+    padding: 14px 32px;
 }
 
-header h1 {
-    margin: 0 0 8px;
+.header-inner {
+    max-width: 1160px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.site-header h1 {
+    margin: 0;
     font-size: 24px;
 }
 
-nav a {
+.site-header h1 a {
     color: white;
-    margin-right: 14px;
+    text-decoration: none;
+}
+
+.top-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.top-nav a {
+    color: white;
     text-decoration: none;
     font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.top-nav a:hover {
+    background: rgba(255, 255, 255, 0.16);
 }
 
 main {
@@ -89,4 +115,82 @@ button, .btn {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 16px;
+}
+
+.admin-layout {
+    max-width: 1180px;
+    margin: 24px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.admin-sidebar {
+    border: 1px solid #ddd2e8;
+    border-radius: 6px;
+    background: #fbf9fd;
+    padding: 14px;
+    position: sticky;
+    top: 16px;
+}
+
+.admin-sidebar h2 {
+    margin: 0 0 12px;
+    font-size: 18px;
+}
+
+.side-nav {
+    display: grid;
+    gap: 8px;
+}
+
+.side-nav a {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 4px;
+    color: #3f1d5f;
+    text-decoration: none;
+    font-weight: bold;
+    background: #efe7f7;
+}
+
+.side-nav a:hover {
+    background: #ddd0ea;
+}
+
+.side-nav .side-nav-exit {
+    margin-top: 10px;
+    color: white;
+    background: #7c2d45;
+}
+
+.admin-content {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+
+.page-title {
+    margin-top: 0;
+}
+
+@media (max-width: 760px) {
+    .header-inner {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .top-nav {
+        justify-content: flex-start;
+    }
+
+    .admin-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-sidebar {
+        position: static;
+    }
 }

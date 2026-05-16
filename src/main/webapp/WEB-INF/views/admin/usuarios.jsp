@@ -4,8 +4,11 @@
 <html>
 <head><title>Usuarios</title><link rel="stylesheet" href="/resources/css/style.css"></head>
 <body>
-<header><h1>Usuarios</h1><nav><a href="/admin/dashboard">Dashboard</a></nav></header>
-<main>
+<%@ include file="../includes/public-header.jsp" %>
+<div class="admin-layout">
+    <%@ include file="../includes/admin-sidebar.jsp" %>
+<main class="admin-content">
+    <h2 class="page-title">Usuarios</h2>
     <form method="post" action="/admin/usuarios" class="card">
         <label>Nombre</label><input name="nombre" required>
         <label>Email</label><input type="email" name="email" required>
@@ -21,5 +24,6 @@
         </c:forEach>
     </table>
 </main>
+</div>
 </body>
 </html>

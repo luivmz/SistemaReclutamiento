@@ -4,8 +4,11 @@
 <html>
 <head><title>Areas</title><link rel="stylesheet" href="/resources/css/style.css"></head>
 <body>
-<header><h1>Areas</h1><nav><a href="/admin/dashboard">Dashboard</a></nav></header>
-<main>
+<%@ include file="../includes/public-header.jsp" %>
+<div class="admin-layout">
+    <%@ include file="../includes/admin-sidebar.jsp" %>
+<main class="admin-content">
+    <h2 class="page-title">Areas</h2>
     <form method="post" action="/admin/areas" class="card">
         <label>Nombre</label><input name="nombre" required>
         <label>Descripcion</label><textarea name="descripcion"></textarea>
@@ -18,5 +21,6 @@
         </c:forEach>
     </table>
 </main>
+</div>
 </body>
 </html>

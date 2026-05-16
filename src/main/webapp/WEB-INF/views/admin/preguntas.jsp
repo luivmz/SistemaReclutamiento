@@ -4,8 +4,11 @@
 <html>
 <head><title>Preguntas</title><link rel="stylesheet" href="/resources/css/style.css"></head>
 <body>
-<header><h1>Preguntas</h1><nav><a href="/admin/dashboard">Dashboard</a></nav></header>
-<main>
+<%@ include file="../includes/public-header.jsp" %>
+<div class="admin-layout">
+    <%@ include file="../includes/admin-sidebar.jsp" %>
+<main class="admin-content">
+    <h2 class="page-title">Preguntas</h2>
     <form method="post" action="/admin/preguntas" class="card">
         <label>Oferta</label>
         <select name="ofertaId">
@@ -24,5 +27,6 @@
         </c:forEach>
     </table>
 </main>
+</div>
 </body>
 </html>

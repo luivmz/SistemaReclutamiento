@@ -33,6 +33,12 @@ public class OfertaController {
         return "publico/ofertas";
     }
 
+    @GetMapping("/areas")
+    public String areas(Model model) {
+        model.addAttribute("areas", areaService.listar());
+        return "publico/areas";
+    }
+
     @GetMapping("/ofertas/{id}")
     public String detalle(@PathVariable Long id, Model model) {
         model.addAttribute("oferta", ofertaService.buscar(id));

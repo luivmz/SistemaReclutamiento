@@ -3,7 +3,7 @@
 <html>
 <head><title>Detalle oferta</title><link rel="stylesheet" href="/resources/css/style.css"></head>
 <body>
-<header><h1>Talento Academico</h1><nav><a href="/ofertas">Ofertas</a><a href="/login">Login</a></nav></header>
+<%@ include file="../includes/public-header.jsp" %>
 <main>
     <section class="card">
         <h2>${oferta.titulo}</h2>

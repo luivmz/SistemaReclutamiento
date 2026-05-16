@@ -4,7 +4,7 @@
 <html>
 <head><title>Ofertas</title><link rel="stylesheet" href="/resources/css/style.css"></head>
 <body>
-<header><h1>Talento Academico</h1><nav><a href="/">Inicio</a><a href="/login">Login</a></nav></header>
+<%@ include file="../includes/public-header.jsp" %>
 <main>
     <h2>Ofertas laborales</h2>
     <c:forEach var="oferta" items="${ofertas}">

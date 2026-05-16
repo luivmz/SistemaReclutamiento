@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="/resources/css/style.css">
 </head>
 <body>
-<header><h1>Talento Academico</h1><nav><a href="/">Inicio</a><a href="/registro">Registro</a></nav></header>
+<%@ include file="../includes/public-header.jsp" %>
 <main>
     <h2>Iniciar sesion</h2>
     <p class="error">${error}</p>

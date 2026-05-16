@@ -2,11 +2,13 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html>
-<head><title>Postulantes</title><link rel="stylesheet" href="/resources/css/style.css"><script src="/resources/js/app.js"></script></head>
+<head><title>Postulantes</title><link rel="stylesheet" href="/resources/css/style.css"></head>
 <body>
-<header><h1>Postulantes</h1><nav><a href="/admin/dashboard">Dashboard</a></nav></header>
-<main>
-    <h2>Postulantes activos</h2>
+<%@ include file="../includes/public-header.jsp" %>
+<div class="admin-layout">
+    <%@ include file="../includes/admin-sidebar.jsp" %>
+<main class="admin-content">
+    <h2 class="page-title">Postulantes activos</h2>
     <table>
         <tr><th>Nombre</th><th>Email</th><th>Oferta</th><th>Puntaje</th><th>Acciones</th></tr>
         <c:forEach var="p" items="${activos}">
@@ -28,5 +30,6 @@
         </c:forEach>
     </table>
 </main>
+</div>
 </body>
 </html>

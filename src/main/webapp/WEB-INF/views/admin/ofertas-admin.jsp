@@ -2,10 +2,13 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html>
-<head><title>Ofertas admin</title><link rel="stylesheet" href="/resources/css/style.css"><script src="/resources/js/app.js"></script></head>
+<head><title>Ofertas admin</title><link rel="stylesheet" href="/resources/css/style.css"></head>
 <body>
-<header><h1>Ofertas</h1><nav><a href="/admin/dashboard">Dashboard</a></nav></header>
-<main>
+<%@ include file="../includes/public-header.jsp" %>
+<div class="admin-layout">
+    <%@ include file="../includes/admin-sidebar.jsp" %>
+<main class="admin-content">
+    <h2 class="page-title">Ofertas</h2>
     <form method="post" action="/admin/ofertas" class="card">
         <label>Titulo</label><input name="titulo" required>
         <label>Descripcion</label><textarea name="descripcion"></textarea>
@@ -24,10 +27,11 @@
         <c:forEach var="o" items="${ofertas}">
             <tr>
                 <td>${o.titulo}</td><td>${o.areaNombre}</td><td>${o.vacantes}</td><td>${o.activa}</td>
-                <td><a class="btn secundario" href="/admin/ofertas/eliminar/${o.id}" onclick="return confirmarAccion('Eliminar oferta?')">Eliminar</a></td>
+                <td><a class="btn secundario" href="/admin/ofertas/eliminar/${o.id}">Eliminar</a></td>
             </tr>
         </c:forEach>
     </table>
 </main>
+</div>
 </body>
 </html>

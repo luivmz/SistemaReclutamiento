@@ -3,7 +3,7 @@
 <html>
 <head><title>Contacto</title><link rel="stylesheet" href="/resources/css/style.css"></head>
 <body>
-<header><h1>Talento Academico</h1><nav><a href="/">Inicio</a><a href="/ofertas">Ofertas</a></nav></header>
+<%@ include file="../includes/public-header.jsp" %>
 <main>
     <h2>Contacto</h2>
     <section class="card">

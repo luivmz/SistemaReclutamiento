@@ -4,8 +4,11 @@
 <html>
 <head><title>Entrevistas</title><link rel="stylesheet" href="/resources/css/style.css"></head>
 <body>
-<header><h1>Entrevistas</h1><nav><a href="/admin/dashboard">Dashboard</a></nav></header>
-<main>
+<%@ include file="../includes/public-header.jsp" %>
+<div class="admin-layout">
+    <%@ include file="../includes/admin-sidebar.jsp" %>
+<main class="admin-content">
+    <h2 class="page-title">Entrevistas</h2>
     <form method="post" action="/admin/entrevistas" class="card">
         <label>Tipo</label><select name="tipoEntrevista"><option>NORMAL</option><option>PSICOLOGICA</option></select>
         <label>Postulante</label>
@@ -28,5 +31,6 @@
         </c:forEach>
     </table>
 </main>
+</div>
 </body>
 </html>
