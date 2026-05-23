@@ -11,7 +11,6 @@ import edu.reclutamiento.talentoacademico.repository.PostulanteRepository;
 import edu.reclutamiento.talentoacademico.repository.UsuarioRepository;
 import edu.reclutamiento.talentoacademico.service.PostulanteService;
 import java.util.List;
-import java.util.NoSuchElementException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -76,31 +75,6 @@ public class PostulanteServiceImpl implements PostulanteService {
         return PostulanteMapper.toDTO(postulanteRepository.save(postulante));
     }
 
-    public PostulanteDTO crear(PostulanteDTO dto) {
-        // F1 - ROJO:
-        // La prueba inicia exigiendo que un postulante sin nombre sea rechazado con HTTP 400.
-        //
-        // F2 - VERDE:
-        // La implementacion minima podria devolver un DTO con el nombre recibido.
-        //
-        // F3 - REFACTORIZAR:
-        // El codigo final valida, busca la oferta, usa mapper, persiste con repository
-        // y fuerza el estado inicial POSTULADO.
-        validarCreacion(dto);
-        OfertaLaboral oferta = ofertaRepository.findById(dto.getOfertaId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "La oferta indicada (" + dto.getOfertaId() + ") no existe."));
-        dto.setId(null);
-        Postulante postulante = PostulanteMapper.toEntity(dto);
-        postulante.setEstado(EstadoPostulante.POSTULADO);
-        postulante.setAprobado(false);
-        postulante.setOferta(oferta);
-        if (dto.getUsuarioId() != null) {
-            usuarioRepository.findById(dto.getUsuarioId()).ifPresent(postulante::setUsuario);
-        }
-        return PostulanteMapper.toDTO(postulanteRepository.save(postulante));
-    }
-
     public PostulanteDTO actualizar(PostulanteDTO dto) {
         Postulante postulante = postulanteRepository.findById(dto.getId()).orElseThrow();
         postulante.setNombre(dto.getNombre());
@@ -118,67 +92,6 @@ public class PostulanteServiceImpl implements PostulanteService {
         }
         asignarOferta(dto, postulante);
         return PostulanteMapper.toDTO(postulanteRepository.save(postulante));
-    }
-
-    public PostulanteDTO actualizarPostulante(Long id, PostulanteDTO dto) {
-        // F1 - ROJO:
-        // La prueba exige 404 cuando se actualiza un postulante inexistente.
-        //
-        // F2 - VERDE:
-        // El cambio minimo actualiza el telefono de un postulante existente.
-        //
-        // F3 - REFACTORIZAR:
-        // Se actualizan solo campos enviados y el estado mantiene sincronizado aprobado.
-        Postulante postulante = postulanteRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Postulante no encontrado con id " + id));
-        if (dto.getNombre() != null && !dto.getNombre().isBlank()) {
-            postulante.setNombre(dto.getNombre());
-        }
-        if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
-            postulante.setEmail(dto.getEmail());
-        }
-        if (dto.getTelefono() != null) {
-            postulante.setTelefono(dto.getTelefono());
-        }
-        if (dto.getExperiencia() != null) {
-            postulante.setExperiencia(dto.getExperiencia());
-        }
-        if (dto.getHabilidades() != null) {
-            postulante.setHabilidades(dto.getHabilidades());
-        }
-        if (dto.getCv() != null) {
-            postulante.setCv(dto.getCv());
-        }
-        if (dto.getObservacion() != null) {
-            postulante.setObservacion(dto.getObservacion());
-        }
-        if (dto.getPuntaje() != null) {
-            postulante.setPuntaje(dto.getPuntaje());
-        }
-        if (dto.getEstado() != null && !dto.getEstado().isBlank()) {
-            EstadoPostulante nuevoEstado = EstadoPostulante.valueOf(dto.getEstado());
-            postulante.setEstado(nuevoEstado);
-            postulante.setAprobado(nuevoEstado == EstadoPostulante.APROBADO);
-        }
-        if (dto.getOfertaId() != null) {
-            ofertaRepository.findById(dto.getOfertaId()).ifPresent(postulante::setOferta);
-        }
-        return PostulanteMapper.toDTO(postulanteRepository.save(postulante));
-    }
-
-    public void eliminarReal(Long id) {
-        // F1 - ROJO:
-        // La prueba exige 404 al eliminar un postulante que no existe.
-        //
-        // F2 - VERDE:
-        // El cambio minimo elimina un postulante existente.
-        //
-        // F3 - REFACTORIZAR:
-        // Al borrar con repository, el postulante deja de aparecer en /api/postulantes/activos.
-        if (!postulanteRepository.existsById(id)) {
-            throw new NoSuchElementException("Postulante no encontrado con id " + id);
-        }
-        postulanteRepository.deleteById(id);
     }
 
     public void aprobar(Long id) {
@@ -237,21 +150,6 @@ public class PostulanteServiceImpl implements PostulanteService {
         if (dto.getOfertaId() != null) {
             OfertaLaboral oferta = ofertaRepository.findById(dto.getOfertaId()).orElse(null);
             postulante.setOferta(oferta);
-        }
-    }
-
-    private void validarCreacion(PostulanteDTO dto) {
-        if (dto == null) {
-            throw new IllegalArgumentException("El postulante no puede ser nulo.");
-        }
-        if (dto.getNombre() == null || dto.getNombre().isBlank()) {
-            throw new IllegalArgumentException("El nombre del postulante es obligatorio.");
-        }
-        if (dto.getEmail() == null || dto.getEmail().isBlank()) {
-            throw new IllegalArgumentException("El email del postulante es obligatorio.");
-        }
-        if (dto.getOfertaId() == null) {
-            throw new IllegalArgumentException("La oferta del postulante es obligatoria.");
         }
     }
 }
