@@ -35,7 +35,6 @@ public class Postulante {
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
-    private Integer puntaje = 0;
     private Boolean aprobado = false;
 
     @Column(length = 700)
@@ -68,8 +67,6 @@ public class Postulante {
     public void setOferta(OfertaLaboral oferta) { this.oferta = oferta; }
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
-    public Integer getPuntaje() { return puntaje; }
-    public void setPuntaje(Integer puntaje) { this.puntaje = puntaje; }
     public Boolean getAprobado() { return aprobado; }
     public void setAprobado(Boolean aprobado) { this.aprobado = aprobado; }
     public String getObservacion() { return observacion; }

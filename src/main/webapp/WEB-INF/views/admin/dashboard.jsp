@@ -12,6 +12,7 @@
         <section class="card"><h3>Usuarios</h3><p>${usuarios}</p></section>
         <section class="card"><h3>Ofertas</h3><p>${ofertas}</p></section>
         <section class="card"><h3>Activos</h3><p>${activos}</p></section>
+        <section class="card"><h3>Entrevistas</h3><p>${entrevistas}</p></section>
         <section class="card"><h3>Historial</h3><p>${historial}</p></section>
     </div>
     <h2>Opciones</h2>
@@ -19,11 +20,9 @@
         <a class="btn" href="/admin/usuarios">Gestionar usuarios</a>
         <a class="btn" href="/admin/areas">Gestionar areas</a>
         <a class="btn" href="/admin/ofertas">Gestionar ofertas</a>
-        <a class="btn" href="/admin/preguntas">Gestionar preguntas</a>
         <a class="btn" href="/admin/postulantes">Ver postulantes activos</a>
-        <a class="btn" href="/admin/postulantes">Ver historial de postulantes</a>
-        <a class="btn" href="/admin/entrevistas">Ver entrevistas</a>
-        <a class="btn secundario" href="/admin/dashboard">Ver metricas</a>
+        <a class="btn" href="/admin/entrevistas">Gestionar entrevistas</a>
+        <a class="btn" href="/admin/historial">Ver historial</a>
     </div>
 </main>
 </div>

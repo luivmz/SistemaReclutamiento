@@ -14,7 +14,6 @@ public class PostulanteDTO {
     private String ofertaTitulo;
     private String areaNombre;
     private Long usuarioId;
-    private Integer puntaje;
     private Boolean aprobado;
     private String observacion;
 
@@ -44,8 +43,6 @@ public class PostulanteDTO {
     public void setAreaNombre(String areaNombre) { this.areaNombre = areaNombre; }
     public Long getUsuarioId() { return usuarioId; }
     public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
-    public Integer getPuntaje() { return puntaje; }
-    public void setPuntaje(Integer puntaje) { this.puntaje = puntaje; }
     public Boolean getAprobado() { return aprobado; }
     public void setAprobado(Boolean aprobado) { this.aprobado = aprobado; }
     public String getObservacion() { return observacion; }

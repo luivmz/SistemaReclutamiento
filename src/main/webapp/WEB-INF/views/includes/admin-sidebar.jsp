@@ -7,7 +7,7 @@
         <a href="/admin/ofertas">Ofertas</a>
         <a href="/admin/postulantes">Postulantes</a>
         <a href="/admin/entrevistas">Entrevistas</a>
-        <a href="/admin/preguntas">Preguntas</a>
+        <a href="/admin/historial">Historial</a>
         <a class="side-nav-exit" href="/logout">Salir</a>
     </nav>
 </aside>

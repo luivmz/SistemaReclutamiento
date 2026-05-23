@@ -13,15 +13,21 @@ public class Entrevista {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private TipoEntrevista tipoEntrevista;
+    private TipoEntrevista tipoEntrevista = TipoEntrevista.NORMAL;
 
     private LocalDate fecha;
     private LocalTime hora;
     private String lugar;
-    private String resultado;
+    private String modalidad;
+
+    @Enumerated(EnumType.STRING)
+    private ResultadoEntrevista resultado = ResultadoEntrevista.PENDIENTE;
 
     @Column(length = 700)
     private String observacion;
+
+    @Enumerated(EnumType.STRING)
+    private EstadoEntrevista estadoEntrevista = EstadoEntrevista.PROGRAMADA;
 
     @ManyToOne
     @JoinColumn(name = "postulante_id")
@@ -37,10 +43,14 @@ public class Entrevista {
     public void setHora(LocalTime hora) { this.hora = hora; }
     public String getLugar() { return lugar; }
     public void setLugar(String lugar) { this.lugar = lugar; }
-    public String getResultado() { return resultado; }
-    public void setResultado(String resultado) { this.resultado = resultado; }
+    public String getModalidad() { return modalidad; }
+    public void setModalidad(String modalidad) { this.modalidad = modalidad; }
+    public ResultadoEntrevista getResultado() { return resultado; }
+    public void setResultado(ResultadoEntrevista resultado) { this.resultado = resultado; }
     public String getObservacion() { return observacion; }
     public void setObservacion(String observacion) { this.observacion = observacion; }
+    public EstadoEntrevista getEstadoEntrevista() { return estadoEntrevista; }
+    public void setEstadoEntrevista(EstadoEntrevista estadoEntrevista) { this.estadoEntrevista = estadoEntrevista; }
     public Postulante getPostulante() { return postulante; }
     public void setPostulante(Postulante postulante) { this.postulante = postulante; }
 }

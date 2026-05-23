@@ -1,6 +1,7 @@
 package edu.reclutamiento.talentoacademico.service;
 
 import edu.reclutamiento.talentoacademico.dto.PostulanteDTO;
+import edu.reclutamiento.talentoacademico.model.EstadoPostulante;
 import java.util.List;
 
 public interface PostulanteService {
@@ -15,10 +16,9 @@ public interface PostulanteService {
     boolean yaPostulo(Long usuarioId, Long ofertaId);
     long contarPorUsuario(Long usuarioId);
     long contarPorUsuarioYEstado(Long usuarioId, String estado);
-    void marcarEnEvaluacion(Long id);
-    void registrarEvaluacion(Long id, int puntaje, boolean aprobado);
     void cambiarEstado(Long id, String estado);
+    void cambiarEstado(Long id, EstadoPostulante estado);
     void aprobar(Long id);
     void rechazar(Long id);
-    void finalizar(Long id);
+    void marcarEnEntrevista(Long id);
 }

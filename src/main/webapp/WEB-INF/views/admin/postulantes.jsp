@@ -33,11 +33,10 @@
         <label>Estado</label>
         <select name="estado">
             <option value="POSTULADO">POSTULADO</option>
-            <option value="EN_EVALUACION">EN_EVALUACION</option>
+            <option value="EN_ENTREVISTA">EN_ENTREVISTA</option>
             <option value="APROBADO">APROBADO</option>
             <option value="RECHAZADO">RECHAZADO</option>
         </select>
-        <label>Puntaje</label><input type="number" name="puntaje" value="${postulante.puntaje}">
         <label>Observacion</label><textarea name="observacion" rows="3">${postulante.observacion}</textarea>
         <button type="submit">Guardar postulacion</button>
         <a class="btn secundario" href="/admin/postulantes">Nuevo</a>
@@ -45,13 +44,13 @@
 
     <h2 class="page-title">Postulantes activos</h2>
     <table>
-        <tr><th>Nombre</th><th>Email</th><th>Oferta</th><th>Estado</th><th>Puntaje</th><th>Acciones</th></tr>
+        <tr><th>Nombre</th><th>Email</th><th>Oferta</th><th>Estado</th><th>Acciones</th></tr>
         <c:forEach var="p" items="${activos}">
             <tr>
-                <td>${p.nombre}</td><td>${p.email}</td><td>${p.ofertaTitulo}</td><td>${p.estado}</td><td>${p.puntaje}</td>
+                <td>${p.nombre}</td><td>${p.email}</td><td>${p.ofertaTitulo}</td><td>${p.estado}</td>
                 <td>
                     <a class="btn" href="/admin/postulantes/editar/${p.id}">Editar</a>
-                    <a class="btn secundario" href="/admin/postulantes/estado/${p.id}/EN_EVALUACION">En evaluacion</a>
+                    <a class="btn secundario" href="/admin/postulantes/estado/${p.id}/EN_ENTREVISTA">En entrevista</a>
                     <a class="btn" href="/admin/postulantes/aprobar/${p.id}">Aprobar</a>
                     <a class="btn secundario" href="/admin/postulantes/rechazar/${p.id}">Rechazar</a>
                 </td>

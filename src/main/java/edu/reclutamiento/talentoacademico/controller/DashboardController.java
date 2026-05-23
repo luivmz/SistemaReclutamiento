@@ -23,7 +23,7 @@ public class DashboardController {
         model.addAttribute("nombre", session.getAttribute("nombre"));
         model.addAttribute("ofertas", ofertaService.listarActivas().size());
         model.addAttribute("total", postulanteService.contarPorUsuario(usuarioId));
-        model.addAttribute("evaluacion", postulanteService.contarPorUsuarioYEstado(usuarioId, "EN_EVALUACION"));
+        model.addAttribute("enEntrevista", postulanteService.contarPorUsuarioYEstado(usuarioId, "EN_ENTREVISTA"));
         model.addAttribute("aprobadas", postulanteService.contarPorUsuarioYEstado(usuarioId, "APROBADO"));
         model.addAttribute("rechazadas", postulanteService.contarPorUsuarioYEstado(usuarioId, "RECHAZADO"));
         return "postulante/dashboard";

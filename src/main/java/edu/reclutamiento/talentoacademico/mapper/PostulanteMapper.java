@@ -16,7 +16,6 @@ public class PostulanteMapper {
         dto.setCv(postulante.getCv());
         dto.setFechaPostulacion(postulante.getFechaPostulacion() == null ? "" : postulante.getFechaPostulacion().toString());
         dto.setEstado(postulante.getEstado().name());
-        dto.setPuntaje(postulante.getPuntaje());
         dto.setAprobado(postulante.getAprobado());
         dto.setObservacion(postulante.getObservacion());
         if (postulante.getOferta() != null) {
@@ -42,7 +41,6 @@ public class PostulanteMapper {
         postulante.setHabilidades(dto.getHabilidades());
         postulante.setCv(dto.getCv());
         postulante.setEstado(dto.getEstado() == null ? EstadoPostulante.POSTULADO : EstadoPostulante.valueOf(dto.getEstado()));
-        postulante.setPuntaje(dto.getPuntaje() == null ? 0 : dto.getPuntaje());
         postulante.setAprobado(dto.getAprobado() != null && dto.getAprobado());
         postulante.setObservacion(dto.getObservacion());
         return postulante;

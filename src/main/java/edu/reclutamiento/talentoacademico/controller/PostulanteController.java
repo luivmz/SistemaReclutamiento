@@ -1,6 +1,7 @@
 package edu.reclutamiento.talentoacademico.controller;
 
 import edu.reclutamiento.talentoacademico.dto.PostulanteDTO;
+import edu.reclutamiento.talentoacademico.service.EntrevistaService;
 import edu.reclutamiento.talentoacademico.service.OfertaService;
 import edu.reclutamiento.talentoacademico.service.PostulanteService;
 import edu.reclutamiento.talentoacademico.service.UsuarioService;
@@ -17,11 +18,14 @@ public class PostulanteController {
     private final PostulanteService postulanteService;
     private final OfertaService ofertaService;
     private final UsuarioService usuarioService;
+    private final EntrevistaService entrevistaService;
 
-    public PostulanteController(PostulanteService postulanteService, OfertaService ofertaService, UsuarioService usuarioService) {
+    public PostulanteController(PostulanteService postulanteService, OfertaService ofertaService,
+                                UsuarioService usuarioService, EntrevistaService entrevistaService) {
         this.postulanteService = postulanteService;
         this.ofertaService = ofertaService;
         this.usuarioService = usuarioService;
+        this.entrevistaService = entrevistaService;
     }
 
     @GetMapping("/ofertas/{id}/postular")
@@ -66,6 +70,7 @@ public class PostulanteController {
             return "redirect:/acceso-denegado";
         }
         model.addAttribute("postulacion", postulacion);
+        model.addAttribute("entrevistas", entrevistaService.listarPorPostulante(id));
         return "postulante/estado";
     }
 
@@ -124,12 +129,6 @@ public class PostulanteController {
     @GetMapping("/admin/postulantes/rechazar/{id}")
     public String rechazar(@PathVariable Long id) {
         postulanteService.rechazar(id);
-        return "redirect:/admin/postulantes";
-    }
-
-    @GetMapping("/admin/postulantes/finalizar/{id}")
-    public String finalizar(@PathVariable Long id) {
-        postulanteService.finalizar(id);
         return "redirect:/admin/postulantes";
     }
 

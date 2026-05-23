@@ -8,9 +8,9 @@
 <main>
     <h2>Estado de mis postulaciones</h2>
     <table>
-        <tr><th>Postulante</th><th>Oferta</th><th>Estado final</th><th>Puntaje</th></tr>
+        <tr><th>Postulante</th><th>Oferta</th><th>Estado final</th><th>Aprobado</th></tr>
         <c:forEach var="p" items="${historial}">
-            <tr><td>${p.nombre}</td><td>${p.ofertaTitulo}</td><td>${p.estado}</td><td>${p.puntaje}</td></tr>
+            <tr><td>${p.nombre}</td><td>${p.ofertaTitulo}</td><td>${p.estado}</td><td>${p.aprobado}</td></tr>
         </c:forEach>
     </table>
 </main>

@@ -33,7 +33,7 @@ public class PostulanteServiceImpl implements PostulanteService {
     public List<PostulanteDTO> listarActivos() {
         return postulanteRepository.findByEstadoIn(List.of(
                 EstadoPostulante.POSTULADO,
-                EstadoPostulante.EN_EVALUACION
+                EstadoPostulante.EN_ENTREVISTA
         )).stream().map(PostulanteMapper::toDTO).toList();
     }
 
@@ -84,9 +84,6 @@ public class PostulanteServiceImpl implements PostulanteService {
         postulante.setHabilidades(dto.getHabilidades());
         postulante.setCv(dto.getCv());
         postulante.setObservacion(dto.getObservacion());
-        if (dto.getPuntaje() != null) {
-            postulante.setPuntaje(dto.getPuntaje());
-        }
         if (dto.getEstado() != null && !dto.getEstado().isBlank()) {
             postulante.setEstado(EstadoPostulante.valueOf(dto.getEstado()));
         }
@@ -95,15 +92,15 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
     public void aprobar(Long id) {
-        cambiarEstado(id, EstadoPostulante.APROBADO, true);
+        cambiarEstadoInterno(id, EstadoPostulante.APROBADO, true, "Postulante aprobado.");
     }
 
     public void rechazar(Long id) {
-        cambiarEstado(id, EstadoPostulante.RECHAZADO, false);
+        cambiarEstadoInterno(id, EstadoPostulante.RECHAZADO, false, "Postulante rechazado.");
     }
 
-    public void finalizar(Long id) {
-        cambiarEstado(id, EstadoPostulante.RECHAZADO, false);
+    public void marcarEnEntrevista(Long id) {
+        cambiarEstadoInterno(id, EstadoPostulante.EN_ENTREVISTA, false, null);
     }
 
     public boolean yaPostulo(Long usuarioId, Long ofertaId) {
@@ -118,31 +115,21 @@ public class PostulanteServiceImpl implements PostulanteService {
         return postulanteRepository.countByUsuarioIdAndEstado(usuarioId, EstadoPostulante.valueOf(estado));
     }
 
-    public void marcarEnEvaluacion(Long id) {
-        cambiarEstado(id, EstadoPostulante.EN_EVALUACION, false);
-    }
-
-    public void registrarEvaluacion(Long id, int puntaje, boolean aprobado) {
-        Postulante postulante = postulanteRepository.findById(id).orElseThrow();
-        postulante.setPuntaje(puntaje);
-        postulante.setAprobado(aprobado);
-        postulante.setEstado(aprobado ? EstadoPostulante.APROBADO : EstadoPostulante.RECHAZADO);
-        postulante.setObservacion(aprobado ? "Evaluacion aprobada." : "Evaluacion desaprobada.");
-        postulanteRepository.save(postulante);
-    }
-
     public void cambiarEstado(Long id, String estado) {
-        EstadoPostulante nuevoEstado = EstadoPostulante.valueOf(estado);
-        Postulante postulante = postulanteRepository.findById(id).orElseThrow();
-        postulante.setEstado(nuevoEstado);
-        postulante.setAprobado(nuevoEstado == EstadoPostulante.APROBADO);
-        postulanteRepository.save(postulante);
+        cambiarEstado(id, EstadoPostulante.valueOf(estado));
     }
 
-    private void cambiarEstado(Long id, EstadoPostulante estado, boolean aprobado) {
+    public void cambiarEstado(Long id, EstadoPostulante estado) {
+        cambiarEstadoInterno(id, estado, estado == EstadoPostulante.APROBADO, null);
+    }
+
+    private void cambiarEstadoInterno(Long id, EstadoPostulante estado, boolean aprobado, String observacion) {
         Postulante postulante = postulanteRepository.findById(id).orElseThrow();
         postulante.setEstado(estado);
         postulante.setAprobado(aprobado);
+        if (observacion != null) {
+            postulante.setObservacion(observacion);
+        }
         postulanteRepository.save(postulante);
     }
 

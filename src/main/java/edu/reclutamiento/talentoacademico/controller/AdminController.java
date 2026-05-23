@@ -1,10 +1,13 @@
 package edu.reclutamiento.talentoacademico.controller;
 
 import edu.reclutamiento.talentoacademico.dto.EntrevistaDTO;
-import edu.reclutamiento.talentoacademico.dto.PreguntaDTO;
 import edu.reclutamiento.talentoacademico.dto.UsuarioDTO;
 import edu.reclutamiento.talentoacademico.model.Area;
-import edu.reclutamiento.talentoacademico.service.*;
+import edu.reclutamiento.talentoacademico.service.AreaService;
+import edu.reclutamiento.talentoacademico.service.EntrevistaService;
+import edu.reclutamiento.talentoacademico.service.OfertaService;
+import edu.reclutamiento.talentoacademico.service.PostulanteService;
+import edu.reclutamiento.talentoacademico.service.UsuarioService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,16 +22,14 @@ public class AdminController {
     private final OfertaService ofertaService;
     private final PostulanteService postulanteService;
     private final EntrevistaService entrevistaService;
-    private final PreguntaService preguntaService;
 
     public AdminController(UsuarioService usuarioService, AreaService areaService, OfertaService ofertaService,
-                           PostulanteService postulanteService, EntrevistaService entrevistaService, PreguntaService preguntaService) {
+                           PostulanteService postulanteService, EntrevistaService entrevistaService) {
         this.usuarioService = usuarioService;
         this.areaService = areaService;
         this.ofertaService = ofertaService;
         this.postulanteService = postulanteService;
         this.entrevistaService = entrevistaService;
-        this.preguntaService = preguntaService;
     }
 
     @GetMapping("/admin/dashboard")
@@ -37,6 +38,17 @@ public class AdminController {
         model.addAttribute("ofertas", ofertaService.listar().size());
         model.addAttribute("activos", postulanteService.listarActivos().size());
         model.addAttribute("historial", postulanteService.listarHistorial().size());
+        model.addAttribute("entrevistas", entrevistaService.listar().size());
+        return "admin/dashboard";
+    }
+
+    @GetMapping("/admin/metricas")
+    public String metricas(Model model) {
+        model.addAttribute("usuarios", usuarioService.listar().size());
+        model.addAttribute("ofertas", ofertaService.listar().size());
+        model.addAttribute("activos", postulanteService.listarActivos().size());
+        model.addAttribute("historial", postulanteService.listarHistorial().size());
+        model.addAttribute("entrevistas", entrevistaService.listar().size());
         return "admin/dashboard";
     }
 
@@ -115,9 +127,17 @@ public class AdminController {
     }
 
     @PostMapping("/admin/entrevistas")
-    public String guardarEntrevista(@ModelAttribute EntrevistaDTO entrevista) {
-        entrevistaService.guardar(entrevista);
-        return "redirect:/admin/entrevistas";
+    public String guardarEntrevista(@ModelAttribute EntrevistaDTO entrevista, Model model) {
+        try {
+            entrevistaService.guardar(entrevista);
+            return "redirect:/admin/entrevistas";
+        } catch (IllegalStateException ex) {
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("entrevistas", entrevistaService.listar());
+            model.addAttribute("postulantes", postulanteService.listarActivos());
+            model.addAttribute("entrevista", entrevista);
+            return "admin/entrevistas";
+        }
     }
 
     @GetMapping("/admin/entrevistas/eliminar/{id}")
@@ -126,31 +146,9 @@ public class AdminController {
         return "redirect:/admin/entrevistas";
     }
 
-    @GetMapping("/admin/preguntas")
-    public String preguntas(Model model) {
-        model.addAttribute("preguntas", preguntaService.listar());
-        model.addAttribute("ofertas", ofertaService.listar());
-        model.addAttribute("pregunta", new PreguntaDTO());
-        return "admin/preguntas";
-    }
-
-    @GetMapping("/admin/preguntas/editar/{id}")
-    public String editarPregunta(@PathVariable Long id, Model model) {
-        model.addAttribute("preguntas", preguntaService.listar());
-        model.addAttribute("ofertas", ofertaService.listar());
-        model.addAttribute("pregunta", preguntaService.buscar(id));
-        return "admin/preguntas";
-    }
-
-    @PostMapping("/admin/preguntas")
-    public String guardarPregunta(@ModelAttribute PreguntaDTO pregunta) {
-        preguntaService.guardar(pregunta);
-        return "redirect:/admin/preguntas";
-    }
-
-    @GetMapping("/admin/preguntas/eliminar/{id}")
-    public String eliminarPregunta(@PathVariable Long id) {
-        preguntaService.eliminar(id);
-        return "redirect:/admin/preguntas";
+    @GetMapping("/admin/historial")
+    public String historial(Model model) {
+        model.addAttribute("historial", postulanteService.listarHistorial());
+        return "admin/historial";
     }
 }

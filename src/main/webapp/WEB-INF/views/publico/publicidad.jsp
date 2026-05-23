@@ -27,7 +27,7 @@
         </section>
         <section class="card">
             <h3>Para administradores</h3>
-            <p>Gestiona usuarios, preguntas, entrevistas y el seguimiento del proceso.</p>
+            <p>Gestiona usuarios, ofertas, entrevistas y el seguimiento del proceso.</p>
         </section>
     </div>
 </main>
