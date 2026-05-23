@@ -5,7 +5,6 @@ import edu.reclutamiento.talentoacademico.mapper.EntrevistaMapper;
 import edu.reclutamiento.talentoacademico.model.Entrevista;
 import edu.reclutamiento.talentoacademico.model.EstadoPostulante;
 import edu.reclutamiento.talentoacademico.model.Postulante;
-import edu.reclutamiento.talentoacademico.model.ResultadoEntrevista;
 import edu.reclutamiento.talentoacademico.repository.EntrevistaRepository;
 import edu.reclutamiento.talentoacademico.repository.PostulanteRepository;
 import edu.reclutamiento.talentoacademico.service.EntrevistaService;
@@ -40,6 +39,7 @@ public class EntrevistaServiceImpl implements EntrevistaService {
     }
 
     public EntrevistaDTO guardar(EntrevistaDTO dto) {
+        boolean esNueva = dto.getId() == null;
         Entrevista entrevista = EntrevistaMapper.toEntity(dto);
         Postulante postulante = null;
         if (dto.getPostulanteId() != null) {
@@ -47,12 +47,16 @@ public class EntrevistaServiceImpl implements EntrevistaService {
             entrevista.setPostulante(postulante);
         }
 
-        if (postulante != null) {
-            validarPostulanteActivo(postulante, dto.getId() == null);
+        if (postulante != null && esNueva) {
+            validarPostulanteActivo(postulante);
         }
 
         Entrevista guardada = entrevistaRepository.save(entrevista);
-        sincronizarEstadoPostulante(guardada);
+
+        if (postulante != null && esNueva) {
+            marcarPostulanteEnEntrevista(postulante);
+        }
+
         return EntrevistaMapper.toDTO(guardada);
     }
 
@@ -60,37 +64,18 @@ public class EntrevistaServiceImpl implements EntrevistaService {
         entrevistaRepository.deleteById(id);
     }
 
-    private void validarPostulanteActivo(Postulante postulante, boolean esNueva) {
-        if (!esNueva) {
-            return;
-        }
+    private void validarPostulanteActivo(Postulante postulante) {
         EstadoPostulante estado = postulante.getEstado();
         if (estado == EstadoPostulante.APROBADO || estado == EstadoPostulante.RECHAZADO) {
             throw new IllegalStateException("Solo se puede programar entrevista a un postulante activo.");
         }
     }
 
-    private void sincronizarEstadoPostulante(Entrevista entrevista) {
-        Postulante postulante = entrevista.getPostulante();
-        if (postulante == null) {
-            return;
+    private void marcarPostulanteEnEntrevista(Postulante postulante) {
+        if (postulante.getEstado() != EstadoPostulante.APROBADO
+                && postulante.getEstado() != EstadoPostulante.RECHAZADO) {
+            postulante.setEstado(EstadoPostulante.EN_ENTREVISTA);
+            postulanteRepository.save(postulante);
         }
-        ResultadoEntrevista resultado = entrevista.getResultado();
-        if (resultado == ResultadoEntrevista.APROBADO) {
-            postulante.setEstado(EstadoPostulante.APROBADO);
-            postulante.setAprobado(true);
-            postulante.setObservacion("Entrevista aprobada.");
-        } else if (resultado == ResultadoEntrevista.DESAPROBADO) {
-            postulante.setEstado(EstadoPostulante.RECHAZADO);
-            postulante.setAprobado(false);
-            postulante.setObservacion("Entrevista desaprobada.");
-        } else {
-            if (postulante.getEstado() != EstadoPostulante.APROBADO
-                    && postulante.getEstado() != EstadoPostulante.RECHAZADO) {
-                postulante.setEstado(EstadoPostulante.EN_ENTREVISTA);
-                postulante.setAprobado(false);
-            }
-        }
-        postulanteRepository.save(postulante);
     }
 }

@@ -10,11 +10,12 @@ public class EntrevistaDTO {
     private LocalTime hora;
     private String lugar;
     private String modalidad;
-    private String resultado;
     private String observacion;
     private String estadoEntrevista;
     private Long postulanteId;
     private String postulanteNombre;
+    private Long resultadoEntrevistaId;
+    private String resultadoEntrevistaValor;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -28,8 +29,6 @@ public class EntrevistaDTO {
     public void setLugar(String lugar) { this.lugar = lugar; }
     public String getModalidad() { return modalidad; }
     public void setModalidad(String modalidad) { this.modalidad = modalidad; }
-    public String getResultado() { return resultado; }
-    public void setResultado(String resultado) { this.resultado = resultado; }
     public String getObservacion() { return observacion; }
     public void setObservacion(String observacion) { this.observacion = observacion; }
     public String getEstadoEntrevista() { return estadoEntrevista; }
@@ -38,4 +37,8 @@ public class EntrevistaDTO {
     public void setPostulanteId(Long postulanteId) { this.postulanteId = postulanteId; }
     public String getPostulanteNombre() { return postulanteNombre; }
     public void setPostulanteNombre(String postulanteNombre) { this.postulanteNombre = postulanteNombre; }
+    public Long getResultadoEntrevistaId() { return resultadoEntrevistaId; }
+    public void setResultadoEntrevistaId(Long resultadoEntrevistaId) { this.resultadoEntrevistaId = resultadoEntrevistaId; }
+    public String getResultadoEntrevistaValor() { return resultadoEntrevistaValor; }
+    public void setResultadoEntrevistaValor(String resultadoEntrevistaValor) { this.resultadoEntrevistaValor = resultadoEntrevistaValor; }
 }

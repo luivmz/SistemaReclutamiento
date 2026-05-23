@@ -22,6 +22,7 @@
         <a class="btn" href="/admin/ofertas">Gestionar ofertas</a>
         <a class="btn" href="/admin/postulantes">Ver postulantes activos</a>
         <a class="btn" href="/admin/entrevistas">Gestionar entrevistas</a>
+        <a class="btn" href="/admin/resultados-entrevista">Resultados de entrevistas</a>
         <a class="btn" href="/admin/historial">Ver historial</a>
     </div>
 </main>

@@ -3,7 +3,6 @@ package edu.reclutamiento.talentoacademico.mapper;
 import edu.reclutamiento.talentoacademico.dto.EntrevistaDTO;
 import edu.reclutamiento.talentoacademico.model.Entrevista;
 import edu.reclutamiento.talentoacademico.model.EstadoEntrevista;
-import edu.reclutamiento.talentoacademico.model.ResultadoEntrevista;
 import edu.reclutamiento.talentoacademico.model.TipoEntrevista;
 
 public class EntrevistaMapper {
@@ -15,12 +14,17 @@ public class EntrevistaMapper {
         dto.setHora(entrevista.getHora());
         dto.setLugar(entrevista.getLugar());
         dto.setModalidad(entrevista.getModalidad());
-        dto.setResultado(entrevista.getResultado() == null ? null : entrevista.getResultado().name());
         dto.setObservacion(entrevista.getObservacion());
         dto.setEstadoEntrevista(entrevista.getEstadoEntrevista() == null ? null : entrevista.getEstadoEntrevista().name());
         if (entrevista.getPostulante() != null) {
             dto.setPostulanteId(entrevista.getPostulante().getId());
             dto.setPostulanteNombre(entrevista.getPostulante().getNombre());
+        }
+        if (entrevista.getResultadoEntrevista() != null) {
+            dto.setResultadoEntrevistaId(entrevista.getResultadoEntrevista().getId());
+            if (entrevista.getResultadoEntrevista().getResultado() != null) {
+                dto.setResultadoEntrevistaValor(entrevista.getResultadoEntrevista().getResultado().name());
+            }
         }
         return dto;
     }
@@ -35,9 +39,6 @@ public class EntrevistaMapper {
         entrevista.setHora(dto.getHora());
         entrevista.setLugar(dto.getLugar());
         entrevista.setModalidad(dto.getModalidad());
-        entrevista.setResultado(dto.getResultado() == null || dto.getResultado().isBlank()
-                ? ResultadoEntrevista.PENDIENTE
-                : ResultadoEntrevista.valueOf(dto.getResultado()));
         entrevista.setObservacion(dto.getObservacion());
         entrevista.setEstadoEntrevista(dto.getEstadoEntrevista() == null || dto.getEstadoEntrevista().isBlank()
                 ? EstadoEntrevista.PROGRAMADA

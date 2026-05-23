@@ -14,6 +14,7 @@
         <p><strong>Resultado:</strong> ${postulacion.aprobado}</p>
         <p><strong>Observacion:</strong> ${postulacion.observacion}</p>
     </section>
+
     <h3>Entrevistas asignadas</h3>
     <c:choose>
         <c:when test="${empty entrevistas}">
@@ -21,7 +22,15 @@
         </c:when>
         <c:otherwise>
             <table>
-                <tr><th>Tipo</th><th>Fecha</th><th>Hora</th><th>Lugar</th><th>Modalidad</th><th>Estado</th><th>Resultado</th></tr>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Lugar</th>
+                    <th>Modalidad</th>
+                    <th>Estado</th>
+                    <th>Resultado</th>
+                </tr>
                 <c:forEach var="e" items="${entrevistas}">
                     <tr>
                         <td>${e.tipoEntrevista}</td>
@@ -30,7 +39,7 @@
                         <td>${e.lugar}</td>
                         <td>${e.modalidad}</td>
                         <td>${e.estadoEntrevista}</td>
-                        <td>${e.resultado}</td>
+                        <td>${e.resultadoEntrevistaValor}</td>
                     </tr>
                 </c:forEach>
             </table>
