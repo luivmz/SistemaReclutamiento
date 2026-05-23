@@ -14,6 +14,7 @@ public interface PostulanteService {
     PostulanteDTO postular(PostulanteDTO dto, Long usuarioId);
     PostulanteDTO actualizar(PostulanteDTO dto);
     boolean yaPostulo(Long usuarioId, Long ofertaId);
+    long contarPorEstado(EstadoPostulante estado);
     long contarPorUsuario(Long usuarioId);
     long contarPorUsuarioYEstado(Long usuarioId, String estado);
     void cambiarEstado(Long id, String estado);

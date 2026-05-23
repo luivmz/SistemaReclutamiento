@@ -13,6 +13,9 @@
         <section class="card"><h3>Ofertas</h3><p>${ofertas}</p></section>
         <section class="card"><h3>Activos</h3><p>${activos}</p></section>
         <section class="card"><h3>Entrevistas</h3><p>${entrevistas}</p></section>
+        <section class="card"><h3>Programadas</h3><p>${entrevistasProgramadas}</p></section>
+        <section class="card"><h3>Aprobados</h3><p>${aprobados}</p></section>
+        <section class="card"><h3>Rechazados</h3><p>${rechazados}</p></section>
         <section class="card"><h3>Historial</h3><p>${historial}</p></section>
     </div>
     <h2>Opciones</h2>

@@ -3,13 +3,11 @@ package edu.reclutamiento.talentoacademico.controller;
 import edu.reclutamiento.talentoacademico.model.Entrevista;
 import edu.reclutamiento.talentoacademico.model.EstadoResultado;
 import edu.reclutamiento.talentoacademico.model.ResultadoEntrevista;
-import edu.reclutamiento.talentoacademico.service.EntrevistaService;
 import edu.reclutamiento.talentoacademico.service.ResultadoEntrevistaService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,12 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class ResultadoEntrevistaController {
 
     private final ResultadoEntrevistaService resultadoService;
-    private final EntrevistaService entrevistaService;
 
-    public ResultadoEntrevistaController(ResultadoEntrevistaService resultadoService,
-                                         EntrevistaService entrevistaService) {
+    public ResultadoEntrevistaController(ResultadoEntrevistaService resultadoService) {
         this.resultadoService = resultadoService;
-        this.entrevistaService = entrevistaService;
     }
 
     @GetMapping("/admin/resultados-entrevista")

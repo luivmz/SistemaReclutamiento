@@ -3,6 +3,8 @@ package edu.reclutamiento.talentoacademico.controller;
 import edu.reclutamiento.talentoacademico.dto.EntrevistaDTO;
 import edu.reclutamiento.talentoacademico.dto.UsuarioDTO;
 import edu.reclutamiento.talentoacademico.model.Area;
+import edu.reclutamiento.talentoacademico.model.EstadoEntrevista;
+import edu.reclutamiento.talentoacademico.model.EstadoPostulante;
 import edu.reclutamiento.talentoacademico.service.AreaService;
 import edu.reclutamiento.talentoacademico.service.EntrevistaService;
 import edu.reclutamiento.talentoacademico.service.OfertaService;
@@ -34,22 +36,25 @@ public class AdminController {
 
     @GetMapping("/admin/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("usuarios", usuarioService.listar().size());
-        model.addAttribute("ofertas", ofertaService.listar().size());
-        model.addAttribute("activos", postulanteService.listarActivos().size());
-        model.addAttribute("historial", postulanteService.listarHistorial().size());
-        model.addAttribute("entrevistas", entrevistaService.listar().size());
+        cargarMetricas(model);
         return "admin/dashboard";
     }
 
     @GetMapping("/admin/metricas")
     public String metricas(Model model) {
+        cargarMetricas(model);
+        return "admin/dashboard";
+    }
+
+    private void cargarMetricas(Model model) {
         model.addAttribute("usuarios", usuarioService.listar().size());
         model.addAttribute("ofertas", ofertaService.listar().size());
         model.addAttribute("activos", postulanteService.listarActivos().size());
         model.addAttribute("historial", postulanteService.listarHistorial().size());
         model.addAttribute("entrevistas", entrevistaService.listar().size());
-        return "admin/dashboard";
+        model.addAttribute("entrevistasProgramadas", entrevistaService.contarPorEstado(EstadoEntrevista.PROGRAMADA));
+        model.addAttribute("aprobados", postulanteService.contarPorEstado(EstadoPostulante.APROBADO));
+        model.addAttribute("rechazados", postulanteService.contarPorEstado(EstadoPostulante.RECHAZADO));
     }
 
     @GetMapping("/admin/usuarios")

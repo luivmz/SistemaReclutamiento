@@ -107,6 +107,10 @@ public class PostulanteServiceImpl implements PostulanteService {
         return postulanteRepository.existsByUsuarioIdAndOfertaId(usuarioId, ofertaId);
     }
 
+    public long contarPorEstado(EstadoPostulante estado) {
+        return postulanteRepository.countByEstado(estado);
+    }
+
     public long contarPorUsuario(Long usuarioId) {
         return postulanteRepository.countByUsuarioId(usuarioId);
     }

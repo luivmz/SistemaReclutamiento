@@ -1,6 +1,7 @@
 package edu.reclutamiento.talentoacademico.service;
 
 import edu.reclutamiento.talentoacademico.dto.EntrevistaDTO;
+import edu.reclutamiento.talentoacademico.model.EstadoEntrevista;
 import java.util.List;
 
 public interface EntrevistaService {
@@ -8,5 +9,6 @@ public interface EntrevistaService {
     List<EntrevistaDTO> listarPorPostulante(Long postulanteId);
     EntrevistaDTO buscar(Long id);
     EntrevistaDTO guardar(EntrevistaDTO dto);
+    long contarPorEstado(EstadoEntrevista estado);
     void eliminar(Long id);
 }

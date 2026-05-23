@@ -3,6 +3,7 @@ package edu.reclutamiento.talentoacademico.service.impl;
 import edu.reclutamiento.talentoacademico.dto.EntrevistaDTO;
 import edu.reclutamiento.talentoacademico.mapper.EntrevistaMapper;
 import edu.reclutamiento.talentoacademico.model.Entrevista;
+import edu.reclutamiento.talentoacademico.model.EstadoEntrevista;
 import edu.reclutamiento.talentoacademico.model.EstadoPostulante;
 import edu.reclutamiento.talentoacademico.model.Postulante;
 import edu.reclutamiento.talentoacademico.repository.EntrevistaRepository;
@@ -62,6 +63,11 @@ public class EntrevistaServiceImpl implements EntrevistaService {
 
     public void eliminar(Long id) {
         entrevistaRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public long contarPorEstado(EstadoEntrevista estado) {
+        return entrevistaRepository.countByEstadoEntrevista(estado);
     }
 
     private void validarPostulanteActivo(Postulante postulante) {
