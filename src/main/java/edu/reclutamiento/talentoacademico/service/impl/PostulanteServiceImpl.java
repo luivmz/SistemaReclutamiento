@@ -9,21 +9,27 @@ import edu.reclutamiento.talentoacademico.model.Usuario;
 import edu.reclutamiento.talentoacademico.repository.OfertaRepository;
 import edu.reclutamiento.talentoacademico.repository.PostulanteRepository;
 import edu.reclutamiento.talentoacademico.repository.UsuarioRepository;
+import edu.reclutamiento.talentoacademico.service.HistorialPostulanteService;
 import edu.reclutamiento.talentoacademico.service.PostulanteService;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class PostulanteServiceImpl implements PostulanteService {
     private final PostulanteRepository postulanteRepository;
     private final OfertaRepository ofertaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final HistorialPostulanteService historialPostulanteService;
 
     public PostulanteServiceImpl(PostulanteRepository postulanteRepository, OfertaRepository ofertaRepository,
-                                 UsuarioRepository usuarioRepository) {
+                                 UsuarioRepository usuarioRepository,
+                                 HistorialPostulanteService historialPostulanteService) {
         this.postulanteRepository = postulanteRepository;
         this.ofertaRepository = ofertaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.historialPostulanteService = historialPostulanteService;
     }
 
     public List<PostulanteDTO> listar() {
@@ -75,8 +81,9 @@ public class PostulanteServiceImpl implements PostulanteService {
         return PostulanteMapper.toDTO(postulanteRepository.save(postulante));
     }
 
-    public PostulanteDTO actualizar(PostulanteDTO dto) {
+    public PostulanteDTO actualizar(PostulanteDTO dto, String registradoPor) {
         Postulante postulante = postulanteRepository.findById(dto.getId()).orElseThrow();
+        EstadoPostulante estadoAnterior = postulante.getEstado();
         postulante.setNombre(dto.getNombre());
         postulante.setEmail(dto.getEmail());
         postulante.setTelefono(dto.getTelefono());
@@ -88,19 +95,22 @@ public class PostulanteServiceImpl implements PostulanteService {
             postulante.setEstado(EstadoPostulante.valueOf(dto.getEstado()));
         }
         asignarOferta(dto, postulante);
-        return PostulanteMapper.toDTO(postulanteRepository.save(postulante));
+        Postulante guardado = postulanteRepository.save(postulante);
+        historialPostulanteService.registrarCambioEstado(
+                guardado, estadoAnterior, guardado.getEstado(), dto.getObservacion(), registradoPor);
+        return PostulanteMapper.toDTO(guardado);
     }
 
-    public void aprobar(Long id) {
-        cambiarEstadoInterno(id, EstadoPostulante.APROBADO, true, "Postulante aprobado.");
+    public void aprobar(Long id, String registradoPor) {
+        cambiarEstadoInterno(id, EstadoPostulante.APROBADO, true, "Postulante aprobado.", registradoPor);
     }
 
-    public void rechazar(Long id) {
-        cambiarEstadoInterno(id, EstadoPostulante.RECHAZADO, false, "Postulante rechazado.");
+    public void rechazar(Long id, String registradoPor) {
+        cambiarEstadoInterno(id, EstadoPostulante.RECHAZADO, false, "Postulante rechazado.", registradoPor);
     }
 
-    public void marcarEnEntrevista(Long id) {
-        cambiarEstadoInterno(id, EstadoPostulante.EN_ENTREVISTA, false, null);
+    public void marcarEnEntrevista(Long id, String registradoPor) {
+        cambiarEstadoInterno(id, EstadoPostulante.EN_ENTREVISTA, false, null, registradoPor);
     }
 
     public boolean yaPostulo(Long usuarioId, Long ofertaId) {
@@ -119,22 +129,26 @@ public class PostulanteServiceImpl implements PostulanteService {
         return postulanteRepository.countByUsuarioIdAndEstado(usuarioId, EstadoPostulante.valueOf(estado));
     }
 
-    public void cambiarEstado(Long id, String estado) {
-        cambiarEstado(id, EstadoPostulante.valueOf(estado));
+    public void cambiarEstado(Long id, String estado, String registradoPor) {
+        cambiarEstado(id, EstadoPostulante.valueOf(estado), registradoPor);
     }
 
-    public void cambiarEstado(Long id, EstadoPostulante estado) {
-        cambiarEstadoInterno(id, estado, estado == EstadoPostulante.APROBADO, null);
+    public void cambiarEstado(Long id, EstadoPostulante estado, String registradoPor) {
+        cambiarEstadoInterno(id, estado, estado == EstadoPostulante.APROBADO, null, registradoPor);
     }
 
-    private void cambiarEstadoInterno(Long id, EstadoPostulante estado, boolean aprobado, String observacion) {
+    private void cambiarEstadoInterno(Long id, EstadoPostulante estado, boolean aprobado, String observacion,
+                                      String registradoPor) {
         Postulante postulante = postulanteRepository.findById(id).orElseThrow();
+        EstadoPostulante estadoAnterior = postulante.getEstado();
         postulante.setEstado(estado);
         postulante.setAprobado(aprobado);
         if (observacion != null) {
             postulante.setObservacion(observacion);
         }
-        postulanteRepository.save(postulante);
+        Postulante guardado = postulanteRepository.save(postulante);
+        historialPostulanteService.registrarCambioEstado(
+                guardado, estadoAnterior, estado, observacion, registradoPor);
     }
 
     private void asignarOferta(PostulanteDTO dto, Postulante postulante) {

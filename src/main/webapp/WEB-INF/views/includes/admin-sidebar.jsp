@@ -3,8 +3,8 @@
     <nav class="side-nav">
         <a href="/admin/dashboard">Resumen</a>
         <a href="/admin/usuarios">Usuarios</a>
-        <a href="/admin/areas">Areas</a>
-        <a href="/admin/ofertas">Ofertas</a>
+        <a href="/admin/areas">Areas Academicas</a>
+        <a href="/admin/ofertas">Ofertas Docentes</a>
         <a href="/admin/postulantes">Postulantes</a>
         <a href="/admin/entrevistas">Entrevistas</a>
         <a href="/admin/resultados-entrevista">Resultados</a>

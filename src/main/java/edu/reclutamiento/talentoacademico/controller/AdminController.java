@@ -7,9 +7,11 @@ import edu.reclutamiento.talentoacademico.model.EstadoEntrevista;
 import edu.reclutamiento.talentoacademico.model.EstadoPostulante;
 import edu.reclutamiento.talentoacademico.service.AreaService;
 import edu.reclutamiento.talentoacademico.service.EntrevistaService;
+import edu.reclutamiento.talentoacademico.service.HistorialPostulanteService;
 import edu.reclutamiento.talentoacademico.service.OfertaService;
 import edu.reclutamiento.talentoacademico.service.PostulanteService;
 import edu.reclutamiento.talentoacademico.service.UsuarioService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,14 +26,17 @@ public class AdminController {
     private final OfertaService ofertaService;
     private final PostulanteService postulanteService;
     private final EntrevistaService entrevistaService;
+    private final HistorialPostulanteService historialPostulanteService;
 
     public AdminController(UsuarioService usuarioService, AreaService areaService, OfertaService ofertaService,
-                           PostulanteService postulanteService, EntrevistaService entrevistaService) {
+                           PostulanteService postulanteService, EntrevistaService entrevistaService,
+                           HistorialPostulanteService historialPostulanteService) {
         this.usuarioService = usuarioService;
         this.areaService = areaService;
         this.ofertaService = ofertaService;
         this.postulanteService = postulanteService;
         this.entrevistaService = entrevistaService;
+        this.historialPostulanteService = historialPostulanteService;
     }
 
     @GetMapping("/admin/dashboard")
@@ -50,7 +55,7 @@ public class AdminController {
         model.addAttribute("usuarios", usuarioService.listar().size());
         model.addAttribute("ofertas", ofertaService.listar().size());
         model.addAttribute("activos", postulanteService.listarActivos().size());
-        model.addAttribute("historial", postulanteService.listarHistorial().size());
+        model.addAttribute("historial", historialPostulanteService.listar().size());
         model.addAttribute("entrevistas", entrevistaService.listar().size());
         model.addAttribute("entrevistasProgramadas", entrevistaService.contarPorEstado(EstadoEntrevista.PROGRAMADA));
         model.addAttribute("aprobados", postulanteService.contarPorEstado(EstadoPostulante.APROBADO));
@@ -132,9 +137,9 @@ public class AdminController {
     }
 
     @PostMapping("/admin/entrevistas")
-    public String guardarEntrevista(@ModelAttribute EntrevistaDTO entrevista, Model model) {
+    public String guardarEntrevista(@ModelAttribute EntrevistaDTO entrevista, HttpSession session, Model model) {
         try {
-            entrevistaService.guardar(entrevista);
+            entrevistaService.guardar(entrevista, usuarioActual(session));
             return "redirect:/admin/entrevistas";
         } catch (IllegalStateException ex) {
             model.addAttribute("error", ex.getMessage());
@@ -153,7 +158,16 @@ public class AdminController {
 
     @GetMapping("/admin/historial")
     public String historial(Model model) {
-        model.addAttribute("historial", postulanteService.listarHistorial());
+        model.addAttribute("historial", historialPostulanteService.listar());
         return "admin/historial";
+    }
+
+    private String usuarioActual(HttpSession session) {
+        Object nombre = session.getAttribute("nombre");
+        if (nombre != null) {
+            return nombre.toString();
+        }
+        Object email = session.getAttribute("email");
+        return email == null ? "Administrador" : email.toString();
     }
 }

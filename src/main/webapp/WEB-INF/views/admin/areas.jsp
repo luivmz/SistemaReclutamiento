@@ -2,13 +2,13 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html>
-<head><title>Areas</title><link rel="stylesheet" href="/resources/css/style.css"></head>
+<head><title>Areas Academicas</title><link rel="stylesheet" href="/resources/css/style.css"></head>
 <body>
 <%@ include file="../includes/public-header.jsp" %>
 <div class="admin-layout">
     <%@ include file="../includes/admin-sidebar.jsp" %>
 <main class="admin-content">
-    <h2 class="page-title">Areas</h2>
+    <h2 class="page-title">Areas Academicas</h2>
     <form method="post" action="/admin/areas" class="card">
         <input type="hidden" name="id" value="${area.id}">
         <label>Nombre</label><input name="nombre" value="${area.nombre}" required>

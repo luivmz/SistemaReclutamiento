@@ -12,14 +12,14 @@ public interface PostulanteService {
     List<PostulanteDTO> listarPorUsuario(Long usuarioId);
     PostulanteDTO buscar(Long id);
     PostulanteDTO postular(PostulanteDTO dto, Long usuarioId);
-    PostulanteDTO actualizar(PostulanteDTO dto);
+    PostulanteDTO actualizar(PostulanteDTO dto, String registradoPor);
     boolean yaPostulo(Long usuarioId, Long ofertaId);
     long contarPorEstado(EstadoPostulante estado);
     long contarPorUsuario(Long usuarioId);
     long contarPorUsuarioYEstado(Long usuarioId, String estado);
-    void cambiarEstado(Long id, String estado);
-    void cambiarEstado(Long id, EstadoPostulante estado);
-    void aprobar(Long id);
-    void rechazar(Long id);
-    void marcarEnEntrevista(Long id);
+    void cambiarEstado(Long id, String estado, String registradoPor);
+    void cambiarEstado(Long id, EstadoPostulante estado, String registradoPor);
+    void aprobar(Long id, String registradoPor);
+    void rechazar(Long id, String registradoPor);
+    void marcarEnEntrevista(Long id, String registradoPor);
 }

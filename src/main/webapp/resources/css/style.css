@@ -122,6 +122,19 @@ button, .btn {
     gap: 16px;
 }
 
+.site-footer {
+    border-top: 1px solid #ddd2e8;
+    margin-top: 32px;
+    padding: 18px 20px;
+    text-align: center;
+    background: #fbf9fd;
+    color: #3f1d5f;
+}
+
+.site-footer p {
+    margin: 6px 0;
+}
+
 .admin-layout {
     max-width: 1180px;
     margin: 24px auto;

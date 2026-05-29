@@ -6,25 +6,25 @@ INSERT INTO usuarios (id, nombre, email, password, telefono, rol, activo) VALUES
 (5, 'Rosa Delgado', 'auxiliar.educacion@demo.com', '123456', '999111004', 'POSTULANTE', true);
 
 INSERT INTO areas (id, nombre, descripcion) VALUES
-(1, 'Direccion Academica', 'Planificacion curricular, seguimiento pedagogico y gestion docente'),
+(1, 'Direccion Academica', 'Planificacion curricular, seguimiento pedagogico y gestion docente del colegio'),
 (2, 'Nivel Primaria', 'Acompanamiento academico y formativo de estudiantes de primaria'),
 (3, 'Nivel Secundaria', 'Gestion pedagogica, tutoria y convivencia en secundaria'),
 (4, 'Psicopedagogia', 'Acompanamiento socioemocional, orientacion familiar y convivencia escolar');
 
 INSERT INTO ofertas_laborales (id, titulo, descripcion, vacantes, area_id, activa) VALUES
-(1, 'Docente de Matematica Secundaria', 'Planificacion de sesiones, evaluacion formativa y manejo de aula en secundaria.', 2, 3, true),
-(2, 'Docente de Comunicacion Primaria', 'Desarrollo de comprension lectora, produccion de textos y seguimiento academico.', 1, 2, true),
-(3, 'Auxiliar de Educacion Inicial', 'Apoyo en rutinas escolares, cuidado de estudiantes y comunicacion con familias.', 1, 2, true),
-(4, 'Psicologo Escolar', 'Acompanamiento socioemocional, orientacion a padres y apoyo a la convivencia escolar.', 2, 4, true),
-(5, 'Asistente Administrativo Escolar', 'Gestion de matriculas, atencion a padres y organizacion documentaria del colegio.', 2, 1, true),
-(6, 'Docente de Ciencia y Tecnologia', 'Diseno de actividades experimentales, proyectos escolares y evaluacion por competencias.', 1, 3, true);
+(1, 'Docente de Matematica', 'Planificacion de sesiones, evaluacion formativa, tutoria y acompanamiento academico de estudiantes de secundaria.', 2, 3, true),
+(2, 'Docente de Comunicacion', 'Desarrollo de comprension lectora, produccion de textos, trabajo con familias y seguimiento academico de estudiantes.', 1, 2, true),
+(3, 'Auxiliar de Educacion Inicial', 'Apoyo en rutinas escolares, cuidado de estudiantes pequenos y comunicacion permanente con familias.', 1, 2, true),
+(4, 'Psicologo Escolar', 'Acompanamiento socioemocional, orientacion a padres, tutorias y apoyo a la convivencia escolar.', 2, 4, true),
+(5, 'Asistente Administrativo Escolar', 'Gestion de matriculas, atencion a familias y organizacion documentaria del colegio.', 2, 1, true),
+(6, 'Coordinador Academico', 'Seguimiento de planificacion curricular, acompanamiento pedagogico a docentes y desarrollo academico de estudiantes.', 1, 1, true);
 
 INSERT INTO postulantes (id, nombre, email, telefono, experiencia, habilidades, cv, fecha_postulacion, estado, oferta_id, usuario_id, aprobado, observacion) VALUES
 (1, 'Mariana Torres', 'docente.matematica@demo.com', '999111001', 'Tres anos dictando matematica en secundaria y preparando sesiones por competencias', 'Manejo de aula, evaluacion formativa, planificacion curricular, uso de recursos didacticos', 'cv_mariana_torres_matematica.pdf', DATE '2026-05-10', 'POSTULADO', 1, 2, false, 'Postulacion registrada para revision de experiencia docente.'),
 (2, 'Luis Ramirez', 'docente.comunicacion@demo.com', '999111002', 'Experiencia en comprension lectora y produccion de textos con estudiantes de primaria', 'Comunicacion con estudiantes, trabajo con familias, rubricas, acompanamiento lector', 'cv_luis_ramirez_comunicacion.pdf', DATE '2026-05-11', 'POSTULADO', 2, 3, false, 'Pendiente de revision por coordinacion de primaria.'),
 (3, 'Rosa Delgado', 'auxiliar.educacion@demo.com', '999111004', 'Apoyo en aula inicial, rutinas de cuidado y acompanamiento de estudiantes pequenos', 'Empatia, orden en aula, comunicacion con padres, apoyo a docentes', 'cv_rosa_delgado_auxiliar.pdf', DATE '2026-05-12', 'POSTULADO', 3, 5, false, 'Perfil en revision para apoyo en educacion inicial.'),
 (4, 'Camila Herrera', 'psicologia.escolar@demo.com', '999111003', 'Acompanamiento psicopedagogico y orientacion a estudiantes con necesidades de apoyo', 'Escucha activa, orientacion familiar, convivencia escolar, informes psicopedagogicos', 'cv_camila_herrera_psicologia.pdf', DATE '2026-05-13', 'EN_ENTREVISTA', 4, 4, false, 'Entrevista psicopedagogica programada.'),
-(5, 'Mariana Torres', 'docente.matematica@demo.com', '999111001', 'Experiencia integrando proyectos de ciencia en secundaria y ferias escolares', 'Aprendizaje basado en proyectos, laboratorio escolar, evaluacion por competencias', 'cv_mariana_torres_ciencia.pdf', DATE '2026-05-14', 'EN_ENTREVISTA', 6, 2, false, 'Evaluacion con coordinacion academica pendiente.'),
+(5, 'Mariana Torres', 'docente.matematica@demo.com', '999111001', 'Experiencia en coordinacion de proyectos academicos y acompanamiento docente', 'Planificacion curricular, liderazgo pedagogico, evaluacion por competencias, trabajo con familias', 'cv_mariana_torres_coordinacion.pdf', DATE '2026-05-14', 'EN_ENTREVISTA', 6, 2, false, 'Evaluacion con coordinacion academica pendiente.'),
 (6, 'Luis Ramirez', 'docente.comunicacion@demo.com', '999111002', 'Trabajo administrativo escolar en secretaria academica y atencion a familias', 'Organizacion documentaria, trato con padres, registro de matriculas, Excel', 'cv_luis_ramirez_administrativo.pdf', DATE '2026-05-15', 'APROBADO', 5, 3, true, 'Postulante aprobado para apoyo administrativo escolar.'),
 (7, 'Camila Herrera', 'psicologia.escolar@demo.com', '999111003', 'Experiencia en talleres de convivencia y tutoria para estudiantes de secundaria', 'Tutoria escolar, mediacion, comunicacion asertiva, trabajo con familias', 'cv_camila_herrera_tutoria.pdf', DATE '2026-05-16', 'RECHAZADO', 4, 4, false, 'Requiere fortalecer estrategias de intervencion en convivencia escolar.'),
 (8, 'Rosa Delgado', 'auxiliar.educacion@demo.com', '999111004', 'Apoyo docente en primaria y seguimiento de tareas con estudiantes', 'Manejo de grupo, paciencia, comunicacion con familias, apoyo pedagogico', 'cv_rosa_delgado_primaria.pdf', DATE '2026-05-17', 'APROBADO', 2, 5, true, 'Aprobada por buen desempeno en entrevista con coordinacion primaria.');

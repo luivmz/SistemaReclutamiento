@@ -18,7 +18,7 @@
                 <option value="${u.id}">${u.nombre} - ${u.email}</option>
             </c:forEach>
         </select>
-        <label>Oferta laboral</label>
+        <label>Oferta docente</label>
         <select name="ofertaId" required>
             <c:forEach var="o" items="${ofertas}">
                 <option value="${o.id}">${o.titulo}</option>

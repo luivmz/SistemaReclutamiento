@@ -2,19 +2,19 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html>
-<head><title>Ofertas admin</title><link rel="stylesheet" href="/resources/css/style.css"></head>
+<head><title>Ofertas Docentes</title><link rel="stylesheet" href="/resources/css/style.css"></head>
 <body>
 <%@ include file="../includes/public-header.jsp" %>
 <div class="admin-layout">
     <%@ include file="../includes/admin-sidebar.jsp" %>
 <main class="admin-content">
-    <h2 class="page-title">Ofertas</h2>
+    <h2 class="page-title">Ofertas Docentes</h2>
     <form method="post" action="/admin/ofertas" class="card">
         <input type="hidden" name="id" value="${oferta.id}">
         <label>Titulo</label><input name="titulo" value="${oferta.titulo}" required>
         <label>Descripcion</label><textarea name="descripcion">${oferta.descripcion}</textarea>
         <label>Vacantes</label><input type="number" name="vacantes" value="${oferta.vacantes == null ? 1 : oferta.vacantes}">
-        <label>Area</label>
+        <label>Area academica</label>
         <select name="areaId">
             <c:forEach var="area" items="${areas}">
                 <option value="${area.id}">${area.nombre}</option>
@@ -25,7 +25,7 @@
         <a class="btn secundario" href="/admin/ofertas">Nuevo</a>
     </form>
     <table>
-        <tr><th>Titulo</th><th>Area</th><th>Vacantes</th><th>Activa</th><th>Acciones</th></tr>
+        <tr><th>Titulo</th><th>Area academica</th><th>Vacantes</th><th>Activa</th><th>Acciones</th></tr>
         <c:forEach var="o" items="${ofertas}">
             <tr>
                 <td>${o.titulo}</td><td>${o.areaNombre}</td><td>${o.vacantes}</td><td>${o.activa}</td>

@@ -9,6 +9,7 @@ import edu.reclutamiento.talentoacademico.model.Postulante;
 import edu.reclutamiento.talentoacademico.repository.EntrevistaRepository;
 import edu.reclutamiento.talentoacademico.repository.PostulanteRepository;
 import edu.reclutamiento.talentoacademico.service.EntrevistaService;
+import edu.reclutamiento.talentoacademico.service.HistorialPostulanteService;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,10 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class EntrevistaServiceImpl implements EntrevistaService {
     private final EntrevistaRepository entrevistaRepository;
     private final PostulanteRepository postulanteRepository;
+    private final HistorialPostulanteService historialPostulanteService;
 
-    public EntrevistaServiceImpl(EntrevistaRepository entrevistaRepository, PostulanteRepository postulanteRepository) {
+    public EntrevistaServiceImpl(EntrevistaRepository entrevistaRepository, PostulanteRepository postulanteRepository,
+                                 HistorialPostulanteService historialPostulanteService) {
         this.entrevistaRepository = entrevistaRepository;
         this.postulanteRepository = postulanteRepository;
+        this.historialPostulanteService = historialPostulanteService;
     }
 
     @Transactional(readOnly = true)
@@ -39,7 +43,7 @@ public class EntrevistaServiceImpl implements EntrevistaService {
         return entrevistaRepository.findById(id).map(EntrevistaMapper::toDTO).orElse(new EntrevistaDTO());
     }
 
-    public EntrevistaDTO guardar(EntrevistaDTO dto) {
+    public EntrevistaDTO guardar(EntrevistaDTO dto, String registradoPor) {
         boolean esNueva = dto.getId() == null;
         Entrevista entrevista = EntrevistaMapper.toEntity(dto);
         Postulante postulante = null;
@@ -55,7 +59,7 @@ public class EntrevistaServiceImpl implements EntrevistaService {
         Entrevista guardada = entrevistaRepository.save(entrevista);
 
         if (postulante != null && esNueva) {
-            marcarPostulanteEnEntrevista(postulante);
+            marcarPostulanteEnEntrevista(postulante, registradoPor);
         }
 
         return EntrevistaMapper.toDTO(guardada);
@@ -77,11 +81,15 @@ public class EntrevistaServiceImpl implements EntrevistaService {
         }
     }
 
-    private void marcarPostulanteEnEntrevista(Postulante postulante) {
+    private void marcarPostulanteEnEntrevista(Postulante postulante, String registradoPor) {
         if (postulante.getEstado() != EstadoPostulante.APROBADO
                 && postulante.getEstado() != EstadoPostulante.RECHAZADO) {
+            EstadoPostulante estadoAnterior = postulante.getEstado();
             postulante.setEstado(EstadoPostulante.EN_ENTREVISTA);
-            postulanteRepository.save(postulante);
+            Postulante guardado = postulanteRepository.save(postulante);
+            historialPostulanteService.registrarCambioEstado(
+                    guardado, estadoAnterior, EstadoPostulante.EN_ENTREVISTA,
+                    "Entrevista programada.", registradoPor);
         }
     }
 }

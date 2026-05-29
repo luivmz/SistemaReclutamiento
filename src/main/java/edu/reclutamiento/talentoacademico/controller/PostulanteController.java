@@ -102,12 +102,12 @@ public class PostulanteController {
     }
 
     @PostMapping("/admin/postulantes")
-    public String registrarPostulanteAdmin(@ModelAttribute PostulanteDTO postulante, Model model) {
+    public String registrarPostulanteAdmin(@ModelAttribute PostulanteDTO postulante, HttpSession session, Model model) {
         try {
             if (postulante.getId() == null) {
                 postulanteService.postular(postulante, postulante.getUsuarioId());
             } else {
-                postulanteService.actualizar(postulante);
+                postulanteService.actualizar(postulante, usuarioActual(session));
             }
             return "redirect:/admin/postulantes";
         } catch (IllegalStateException ex) {
@@ -121,20 +121,29 @@ public class PostulanteController {
     }
 
     @GetMapping("/admin/postulantes/aprobar/{id}")
-    public String aprobar(@PathVariable Long id) {
-        postulanteService.aprobar(id);
+    public String aprobar(@PathVariable Long id, HttpSession session) {
+        postulanteService.aprobar(id, usuarioActual(session));
         return "redirect:/admin/postulantes";
     }
 
     @GetMapping("/admin/postulantes/rechazar/{id}")
-    public String rechazar(@PathVariable Long id) {
-        postulanteService.rechazar(id);
+    public String rechazar(@PathVariable Long id, HttpSession session) {
+        postulanteService.rechazar(id, usuarioActual(session));
         return "redirect:/admin/postulantes";
     }
 
     @GetMapping("/admin/postulantes/estado/{id}/{estado}")
-    public String cambiarEstado(@PathVariable Long id, @PathVariable String estado) {
-        postulanteService.cambiarEstado(id, estado);
+    public String cambiarEstado(@PathVariable Long id, @PathVariable String estado, HttpSession session) {
+        postulanteService.cambiarEstado(id, estado, usuarioActual(session));
         return "redirect:/admin/postulantes";
+    }
+
+    private String usuarioActual(HttpSession session) {
+        Object nombre = session.getAttribute("nombre");
+        if (nombre != null) {
+            return nombre.toString();
+        }
+        Object email = session.getAttribute("email");
+        return email == null ? "Administrador" : email.toString();
     }
 }

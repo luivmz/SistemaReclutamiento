@@ -6,9 +6,9 @@
 <body>
 <%@ include file="../includes/public-header.jsp" %>
 <main>
-    <h2>Mis postulaciones</h2>
+    <h2>Mis Postulaciones</h2>
     <table>
-        <tr><th>Oferta</th><th>Area</th><th>Fecha</th><th>Estado</th><th>Aprobado</th><th>Accion</th></tr>
+        <tr><th>Oferta docente</th><th>Area academica</th><th>Fecha</th><th>Estado</th><th>Aprobado</th><th>Accion</th></tr>
         <c:forEach var="p" items="${postulaciones}">
             <tr>
                 <td>${p.ofertaTitulo}</td>
@@ -23,5 +23,6 @@
         </c:forEach>
     </table>
 </main>
+<%@ include file="../includes/footer.jsp" %>
 </body>
 </html>

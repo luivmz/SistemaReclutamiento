@@ -6,16 +6,16 @@
 <body>
 <%@ include file="../includes/public-header.jsp" %>
 <main>
-    <h2>Estado de postulacion</h2>
+    <h2>Estado del Proceso</h2>
     <section class="card">
         <h3>${postulacion.ofertaTitulo}</h3>
-        <p><strong>Area:</strong> ${postulacion.areaNombre}</p>
+        <p><strong>Area academica:</strong> ${postulacion.areaNombre}</p>
         <p><strong>Estado actual:</strong> ${postulacion.estado}</p>
         <p><strong>Resultado:</strong> ${postulacion.aprobado}</p>
         <p><strong>Observacion:</strong> ${postulacion.observacion}</p>
     </section>
 
-    <h3>Entrevistas asignadas</h3>
+    <h3>Entrevistas Programadas</h3>
     <c:choose>
         <c:when test="${empty entrevistas}">
             <p>Aun no tienes entrevistas programadas.</p>
@@ -47,5 +47,6 @@
     </c:choose>
     <a class="btn" href="/postulante/mis-postulaciones">Volver</a>
 </main>
+<%@ include file="../includes/footer.jsp" %>
 </body>
 </html>

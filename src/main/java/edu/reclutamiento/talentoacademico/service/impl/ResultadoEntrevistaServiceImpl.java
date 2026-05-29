@@ -9,6 +9,7 @@ import edu.reclutamiento.talentoacademico.model.ResultadoEntrevista;
 import edu.reclutamiento.talentoacademico.repository.EntrevistaRepository;
 import edu.reclutamiento.talentoacademico.repository.PostulanteRepository;
 import edu.reclutamiento.talentoacademico.repository.ResultadoEntrevistaRepository;
+import edu.reclutamiento.talentoacademico.service.HistorialPostulanteService;
 import edu.reclutamiento.talentoacademico.service.ResultadoEntrevistaService;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,13 +23,16 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
     private final ResultadoEntrevistaRepository resultadoRepository;
     private final EntrevistaRepository entrevistaRepository;
     private final PostulanteRepository postulanteRepository;
+    private final HistorialPostulanteService historialPostulanteService;
 
     public ResultadoEntrevistaServiceImpl(ResultadoEntrevistaRepository resultadoRepository,
                                           EntrevistaRepository entrevistaRepository,
-                                          PostulanteRepository postulanteRepository) {
+                                          PostulanteRepository postulanteRepository,
+                                          HistorialPostulanteService historialPostulanteService) {
         this.resultadoRepository = resultadoRepository;
         this.entrevistaRepository = entrevistaRepository;
         this.postulanteRepository = postulanteRepository;
+        this.historialPostulanteService = historialPostulanteService;
     }
 
     @Transactional(readOnly = true)
@@ -87,7 +91,7 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         ResultadoEntrevista guardado = resultadoRepository.save(resultado);
 
         actualizarEstadoEntrevista(entrevista);
-        actualizarEstadoPostulante(entrevista.getPostulante(), guardado.getResultado());
+        actualizarEstadoPostulante(entrevista.getPostulante(), guardado.getResultado(), registradoPor);
 
         return guardado;
     }
@@ -119,21 +123,28 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         entrevistaRepository.save(entrevista);
     }
 
-    private void actualizarEstadoPostulante(Postulante postulante, EstadoResultado resultado) {
+    private void actualizarEstadoPostulante(Postulante postulante, EstadoResultado resultado, String registradoPor) {
         if (postulante == null) {
             return;
         }
+        EstadoPostulante estadoAnterior = postulante.getEstado();
+        String observacionHistorial = null;
         if (resultado == EstadoResultado.APROBADO) {
             postulante.setEstado(EstadoPostulante.APROBADO);
             postulante.setAprobado(true);
             postulante.setObservacion("Entrevista aprobada.");
+            observacionHistorial = "Entrevista aprobada.";
         } else if (resultado == EstadoResultado.DESAPROBADO) {
             postulante.setEstado(EstadoPostulante.RECHAZADO);
             postulante.setAprobado(false);
             postulante.setObservacion("Entrevista desaprobada.");
+            observacionHistorial = "Entrevista desaprobada.";
         } else {
             postulante.setEstado(EstadoPostulante.EN_ENTREVISTA);
+            observacionHistorial = "Resultado pendiente.";
         }
-        postulanteRepository.save(postulante);
+        Postulante guardado = postulanteRepository.save(postulante);
+        historialPostulanteService.registrarCambioEstado(
+                guardado, estadoAnterior, guardado.getEstado(), observacionHistorial, registradoPor);
     }
 }

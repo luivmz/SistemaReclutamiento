@@ -1,14 +1,17 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <!DOCTYPE html>
 <html>
-<head><title>Contacto</title><link rel="stylesheet" href="/resources/css/style.css"></head>
+<head><title>Contacto Colegio Andino</title><link rel="stylesheet" href="/resources/css/style.css"></head>
 <body>
 <%@ include file="../includes/public-header.jsp" %>
 <main>
     <h2>Contacto</h2>
     <section class="card">
-        <p>Email: informes@talentoacademico.edu</p>
-        <p>Horario: lunes a viernes de 9:00 a 18:00</p>
+        <p>Si desea formar parte de nuestra institucion educativa, comuniquese con nosotros o revise nuestras convocatorias disponibles.</p>
+        <p><strong>Direccion:</strong> Jr. Guido 512 - Huancayo</p>
+        <p><strong>Telefono:</strong> 064 232521</p>
+        <p><strong>Celular:</strong> 944 688 081</p>
+        <p><strong>Correo:</strong> secretaria@andino.edu.pe</p>
     </section>
     <form method="post" action="/contacto" class="card">
         <h3>Envianos tu consulta</h3>
@@ -24,5 +27,6 @@
         <button type="submit">Enviar</button>
     </form>
 </main>
+<%@ include file="../includes/footer.jsp" %>
 </body>
 </html>

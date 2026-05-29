@@ -8,7 +8,7 @@ public interface EntrevistaService {
     List<EntrevistaDTO> listar();
     List<EntrevistaDTO> listarPorPostulante(Long postulanteId);
     EntrevistaDTO buscar(Long id);
-    EntrevistaDTO guardar(EntrevistaDTO dto);
+    EntrevistaDTO guardar(EntrevistaDTO dto, String registradoPor);
     long contarPorEstado(EstadoEntrevista estado);
     void eliminar(Long id);
 }
