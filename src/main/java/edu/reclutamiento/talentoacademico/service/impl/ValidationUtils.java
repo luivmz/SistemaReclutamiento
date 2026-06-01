@@ -1,8 +1,8 @@
 package edu.reclutamiento.talentoacademico.service.impl;
 
 final class ValidationUtils {
-    private static final String NAME_PATTERN = "^[\\p{L}\\p{M}0-9 .,'-]+$";
-    private static final String EMAIL_PATTERN = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
+    private static final String NAME_PATTERN = "^[\\p{L}\\p{M}0-9 .,'-]+$"; // pattern regex
+    private static final String EMAIL_PATTERN = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"; // pattern regex
 
     private ValidationUtils() {
     }
