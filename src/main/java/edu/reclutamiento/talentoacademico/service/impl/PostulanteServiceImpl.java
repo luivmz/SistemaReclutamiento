@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+// @Transactional mantiene unidas las operaciones de postulacion, cambio de estado
+// e historial. Si una parte falla, Spring revierte los cambios para evitar datos incompletos.
 @Transactional
 public class PostulanteServiceImpl implements PostulanteService {
     private final PostulanteRepository postulanteRepository;
@@ -37,6 +39,7 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
     public List<PostulanteDTO> listarActivos() {
+        // Solo POSTULADO y EN_ENTREVISTA son procesos activos; los cerrados van al historial.
         return postulanteRepository.findByEstadoIn(List.of(
                 EstadoPostulante.POSTULADO,
                 EstadoPostulante.EN_ENTREVISTA
@@ -46,7 +49,8 @@ public class PostulanteServiceImpl implements PostulanteService {
     public List<PostulanteDTO> listarHistorial() {
         return postulanteRepository.findByEstadoIn(List.of(
                 EstadoPostulante.APROBADO,
-                EstadoPostulante.RECHAZADO
+                EstadoPostulante.RECHAZADO,
+                EstadoPostulante.CANCELADO
         )).stream().map(PostulanteMapper::toDTO).toList();
     }
 
@@ -63,6 +67,7 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
     public PostulanteDTO postular(PostulanteDTO dto, Long usuarioId) {
+        validarPostulacion(dto);
         if (dto.getOfertaId() != null && yaPostulo(usuarioId, dto.getOfertaId())) {
             throw new IllegalStateException("Ya postulaste a esta oferta.");
         }
@@ -82,6 +87,7 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
     public PostulanteDTO actualizar(PostulanteDTO dto, String registradoPor) {
+        validarPostulacion(dto);
         Postulante postulante = postulanteRepository.findById(dto.getId()).orElseThrow();
         EstadoPostulante estadoAnterior = postulante.getEstado();
         postulante.setNombre(dto.getNombre());
@@ -113,6 +119,27 @@ public class PostulanteServiceImpl implements PostulanteService {
         cambiarEstadoInterno(id, EstadoPostulante.EN_ENTREVISTA, false, null, registradoPor);
     }
 
+    public void cancelar(Long id, Long usuarioId) {
+        Postulante postulante = postulanteRepository.findById(id).orElseThrow();
+        if (postulante.getUsuario() == null || !postulante.getUsuario().getId().equals(usuarioId)) {
+            throw new IllegalStateException("No puedes cancelar una postulacion que no te pertenece.");
+        }
+        if (postulante.getEstado() != EstadoPostulante.POSTULADO
+                && postulante.getEstado() != EstadoPostulante.EN_ENTREVISTA) {
+            throw new IllegalStateException("Solo se pueden cancelar postulaciones activas.");
+        }
+
+        EstadoPostulante estadoAnterior = postulante.getEstado();
+        postulante.setEstado(EstadoPostulante.CANCELADO);
+        postulante.setAprobado(false);
+        postulante.setObservacion("Postulacion cancelada por el postulante");
+        Postulante guardado = postulanteRepository.save(postulante);
+        // El historial deja evidencia academica del cambio de estado realizado por el postulante.
+        historialPostulanteService.registrarCambioEstado(
+                guardado, estadoAnterior, EstadoPostulante.CANCELADO,
+                "Postulacion cancelada por el postulante", guardado.getNombre());
+    }
+
     public boolean yaPostulo(Long usuarioId, Long ofertaId) {
         return postulanteRepository.existsByUsuarioIdAndOfertaId(usuarioId, ofertaId);
     }
@@ -137,6 +164,8 @@ public class PostulanteServiceImpl implements PostulanteService {
         cambiarEstadoInterno(id, estado, estado == EstadoPostulante.APROBADO, null, registradoPor);
     }
 
+    // @Transactional asegura que el estado del postulante y su historial se guarden juntos.
+    // Si falla el historial, tambien se revierte el cambio de estado.
     private void cambiarEstadoInterno(Long id, EstadoPostulante estado, boolean aprobado, String observacion,
                                       String registradoPor) {
         Postulante postulante = postulanteRepository.findById(id).orElseThrow();
@@ -155,6 +184,22 @@ public class PostulanteServiceImpl implements PostulanteService {
         if (dto.getOfertaId() != null) {
             OfertaLaboral oferta = ofertaRepository.findById(dto.getOfertaId()).orElse(null);
             postulante.setOferta(oferta);
+        }
+    }
+
+    private void validarPostulacion(PostulanteDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("La postulacion no puede ser nula.");
+        }
+        ValidationUtils.validarNombre(dto.getNombre(), "El nombre del postulante");
+        ValidationUtils.validarEmail(dto.getEmail());
+        ValidationUtils.validarTextoOpcional(dto.getTelefono(), "El telefono", 40);
+        ValidationUtils.validarTextoOpcional(dto.getExperiencia(), "La experiencia", 700);
+        ValidationUtils.validarTextoOpcional(dto.getHabilidades(), "Las habilidades", 700);
+        ValidationUtils.validarTextoOpcional(dto.getCv(), "El enlace del CV", 255);
+        ValidationUtils.validarTextoOpcional(dto.getObservacion(), "La observacion", 700);
+        if (dto.getOfertaId() == null) {
+            throw new IllegalArgumentException("Debe seleccionar una oferta.");
         }
     }
 }

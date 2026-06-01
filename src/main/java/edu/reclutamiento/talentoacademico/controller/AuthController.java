@@ -28,7 +28,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public String autenticar(@RequestParam String email, @RequestParam String password, HttpSession session, Model model) {
-        Usuario usuario = usuarioService.login(email, password).orElse(null);
+        Usuario usuario;
+        try {
+            usuario = usuarioService.login(email, password).orElse(null);
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+            return "publico/login";
+        }
         if (usuario == null) {
             model.addAttribute("error", "Credenciales incorrectas");
             return "publico/login";
@@ -47,13 +53,19 @@ public class AuthController {
     }
 
     @PostMapping("/registro")
-    public String registrar(@ModelAttribute UsuarioDTO usuario, HttpSession session) {
-        usuario.setRol("POSTULANTE");
-        usuario.setActivo(true);
-        UsuarioDTO creado = usuarioService.guardar(usuario);
-        Usuario entidad = usuarioService.buscarPorId(creado.getId()).orElseThrow();
-        guardarSesion(session, entidad);
-        return "redirect:/postulante/dashboard";
+    public String registrar(@ModelAttribute UsuarioDTO usuario, HttpSession session, Model model) {
+        try {
+            usuario.setRol("POSTULANTE");
+            usuario.setActivo(true);
+            UsuarioDTO creado = usuarioService.guardar(usuario);
+            Usuario entidad = usuarioService.buscarPorId(creado.getId()).orElseThrow();
+            guardarSesion(session, entidad);
+            return "redirect:/postulante/dashboard";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("usuario", usuario);
+            return "publico/registro";
+        }
     }
 
     @GetMapping("/logout")

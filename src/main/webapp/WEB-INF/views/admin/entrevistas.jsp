@@ -15,35 +15,35 @@
 
         <label>Tipo</label>
         <select name="tipoEntrevista">
-            <option value="NORMAL">NORMAL</option>
-            <option value="PSICOLOGICA">PSICOLOGICA</option>
+            <option value="NORMAL" <c:if test="${entrevista.tipoEntrevista == 'NORMAL'}">selected</c:if>>NORMAL</option>
+            <option value="PSICOLOGICA" <c:if test="${entrevista.tipoEntrevista == 'PSICOLOGICA'}">selected</c:if>>PSICOLOGICA</option>
         </select>
 
         <label>Postulante</label>
         <select name="postulanteId" required>
             <c:forEach var="p" items="${postulantes}">
-                <option value="${p.id}">${p.nombre} - ${p.ofertaTitulo}</option>
+                <option value="${p.id}" <c:if test="${p.id == entrevista.postulanteId}">selected</c:if>>${p.nombre} - ${p.ofertaTitulo}</option>
             </c:forEach>
         </select>
 
-        <label>Fecha</label><input type="date" name="fecha" value="${entrevista.fecha}">
-        <label>Hora</label><input type="time" name="hora" value="${entrevista.hora}">
-        <label>Lugar</label><input name="lugar" value="${entrevista.lugar}">
+        <label>Fecha</label><input type="date" name="fecha" value="${entrevista.fecha}" required>
+        <label>Hora</label><input type="time" name="hora" value="${entrevista.hora}" required>
+        <label>Lugar</label><input name="lugar" value="${entrevista.lugar}" maxlength="150" required>
 
         <label>Modalidad</label>
         <select name="modalidad">
-            <option value="PRESENCIAL">PRESENCIAL</option>
-            <option value="VIRTUAL">VIRTUAL</option>
+            <option value="PRESENCIAL" <c:if test="${entrevista.modalidad == 'PRESENCIAL'}">selected</c:if>>PRESENCIAL</option>
+            <option value="VIRTUAL" <c:if test="${entrevista.modalidad == 'VIRTUAL'}">selected</c:if>>VIRTUAL</option>
         </select>
 
         <label>Estado de la entrevista</label>
         <select name="estadoEntrevista">
-            <option value="PROGRAMADA">PROGRAMADA</option>
-            <option value="REALIZADA">REALIZADA</option>
-            <option value="CANCELADA">CANCELADA</option>
+            <option value="PROGRAMADA" <c:if test="${entrevista.estadoEntrevista == 'PROGRAMADA'}">selected</c:if>>PROGRAMADA</option>
+            <option value="REALIZADA" <c:if test="${entrevista.estadoEntrevista == 'REALIZADA'}">selected</c:if>>REALIZADA</option>
+            <option value="CANCELADA" <c:if test="${entrevista.estadoEntrevista == 'CANCELADA'}">selected</c:if>>CANCELADA</option>
         </select>
 
-        <label>Observacion</label><textarea name="observacion">${entrevista.observacion}</textarea>
+        <label>Observacion</label><textarea name="observacion" maxlength="700">${entrevista.observacion}</textarea>
         <button type="submit">Guardar</button>
         <a class="btn secundario" href="/admin/entrevistas">Nuevo</a>
     </form>

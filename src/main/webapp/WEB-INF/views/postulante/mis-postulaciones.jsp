@@ -7,6 +7,7 @@
 <%@ include file="../includes/public-header.jsp" %>
 <main>
     <h2>Mis Postulaciones</h2>
+    <c:if test="${not empty error}"><p class="error">${error}</p></c:if>
     <table>
         <tr><th>Oferta docente</th><th>Area academica</th><th>Fecha</th><th>Estado</th><th>Aprobado</th><th>Accion</th></tr>
         <c:forEach var="p" items="${postulaciones}">
@@ -18,6 +19,11 @@
                 <td>${p.aprobado}</td>
                 <td>
                     <a class="btn" href="/postulante/postulaciones/${p.id}/estado">Ver estado</a>
+                    <c:if test="${p.estado == 'POSTULADO' || p.estado == 'EN_ENTREVISTA'}">
+                        <form method="post" action="/postulante/postulaciones/${p.id}/cancelar" style="display:inline" onsubmit="return confirm('Deseas cancelar esta postulacion?');">
+                            <button type="submit" class="btn secundario">Cancelar postulacion</button>
+                        </form>
+                    </c:if>
                 </td>
             </tr>
         </c:forEach>

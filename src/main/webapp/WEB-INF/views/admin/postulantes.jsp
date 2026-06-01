@@ -15,29 +15,30 @@
         <label>Usuario existente</label>
         <select name="usuarioId" required>
             <c:forEach var="u" items="${usuarios}">
-                <option value="${u.id}">${u.nombre} - ${u.email}</option>
+                <option value="${u.id}" <c:if test="${u.id == postulante.usuarioId}">selected</c:if>>${u.nombre} - ${u.email}</option>
             </c:forEach>
         </select>
         <label>Oferta docente</label>
         <select name="ofertaId" required>
             <c:forEach var="o" items="${ofertas}">
-                <option value="${o.id}">${o.titulo}</option>
+                <option value="${o.id}" <c:if test="${o.id == postulante.ofertaId}">selected</c:if>>${o.titulo}</option>
             </c:forEach>
         </select>
-        <label>Nombre</label><input name="nombre" value="${postulante.nombre}">
-        <label>Email</label><input name="email" value="${postulante.email}">
-        <label>Telefono</label><input name="telefono" value="${postulante.telefono}">
-        <label>Experiencia</label><textarea name="experiencia" rows="3">${postulante.experiencia}</textarea>
-        <label>Habilidades</label><textarea name="habilidades" rows="3">${postulante.habilidades}</textarea>
-        <label>CV opcional</label><input name="cv" value="${postulante.cv}" placeholder="Nombre del archivo o enlace">
+        <label>Nombre</label><input name="nombre" value="${postulante.nombre}" minlength="2" maxlength="120" required>
+        <label>Email</label><input type="email" name="email" value="${postulante.email}" maxlength="120" required>
+        <label>Telefono</label><input name="telefono" value="${postulante.telefono}" maxlength="40">
+        <label>Experiencia</label><textarea name="experiencia" rows="3" maxlength="700">${postulante.experiencia}</textarea>
+        <label>Habilidades</label><textarea name="habilidades" rows="3" maxlength="700">${postulante.habilidades}</textarea>
+        <label>CV como enlace de Drive</label><input name="cv" value="${postulante.cv}" maxlength="255" placeholder="https://drive.google.com/...">
         <label>Estado</label>
         <select name="estado">
-            <option value="POSTULADO">POSTULADO</option>
-            <option value="EN_ENTREVISTA">EN_ENTREVISTA</option>
-            <option value="APROBADO">APROBADO</option>
-            <option value="RECHAZADO">RECHAZADO</option>
+            <option value="POSTULADO" <c:if test="${postulante.estado == 'POSTULADO'}">selected</c:if>>POSTULADO</option>
+            <option value="EN_ENTREVISTA" <c:if test="${postulante.estado == 'EN_ENTREVISTA'}">selected</c:if>>EN_ENTREVISTA</option>
+            <option value="APROBADO" <c:if test="${postulante.estado == 'APROBADO'}">selected</c:if>>APROBADO</option>
+            <option value="RECHAZADO" <c:if test="${postulante.estado == 'RECHAZADO'}">selected</c:if>>RECHAZADO</option>
+            <option value="CANCELADO" <c:if test="${postulante.estado == 'CANCELADO'}">selected</c:if>>CANCELADO</option>
         </select>
-        <label>Observacion</label><textarea name="observacion" rows="3">${postulante.observacion}</textarea>
+        <label>Observacion</label><textarea name="observacion" rows="3" maxlength="700">${postulante.observacion}</textarea>
         <button type="submit">Guardar postulacion</button>
         <a class="btn secundario" href="/admin/postulantes">Nuevo</a>
     </form>

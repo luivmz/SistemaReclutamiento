@@ -35,13 +35,17 @@ public class OfertaController {
 
     @GetMapping("/areas")
     public String areas(Model model) {
-        model.addAttribute("areas", areaService.listar());
+        model.addAttribute("areas", areaService.listarActivas());
         return "publico/areas";
     }
 
     @GetMapping("/ofertas/{id}")
     public String detalle(@PathVariable Long id, Model model) {
-        model.addAttribute("oferta", ofertaService.buscar(id));
+        OfertaDTO oferta = ofertaService.buscarActiva(id);
+        if (oferta == null) {
+            return "redirect:/ofertas";
+        }
+        model.addAttribute("oferta", oferta);
         return "publico/detalle-oferta";
     }
 
@@ -64,7 +68,7 @@ public class OfertaController {
     @GetMapping("/admin/ofertas")
     public String adminOfertas(Model model) {
         model.addAttribute("ofertas", ofertaService.listar());
-        model.addAttribute("areas", areaService.listar());
+        model.addAttribute("areas", areaService.listarActivas());
         model.addAttribute("oferta", new OfertaDTO());
         return "admin/ofertas-admin";
     }
@@ -72,15 +76,23 @@ public class OfertaController {
     @GetMapping("/admin/ofertas/editar/{id}")
     public String editarOferta(@PathVariable Long id, Model model) {
         model.addAttribute("ofertas", ofertaService.listar());
-        model.addAttribute("areas", areaService.listar());
+        model.addAttribute("areas", areaService.listarActivas());
         model.addAttribute("oferta", ofertaService.buscar(id));
         return "admin/ofertas-admin";
     }
 
     @PostMapping("/admin/ofertas")
-    public String guardarOferta(@ModelAttribute OfertaDTO oferta) {
-        ofertaService.guardar(oferta);
-        return "redirect:/admin/ofertas";
+    public String guardarOferta(@ModelAttribute OfertaDTO oferta, Model model) {
+        try {
+            ofertaService.guardar(oferta);
+            return "redirect:/admin/ofertas";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("ofertas", ofertaService.listar());
+            model.addAttribute("areas", areaService.listarActivas());
+            model.addAttribute("oferta", oferta);
+            return "admin/ofertas-admin";
+        }
     }
 
     @RequestMapping("/admin/ofertas/eliminar/{id}")

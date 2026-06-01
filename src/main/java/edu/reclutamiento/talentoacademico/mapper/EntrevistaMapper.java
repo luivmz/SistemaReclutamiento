@@ -7,6 +7,8 @@ import edu.reclutamiento.talentoacademico.model.TipoEntrevista;
 
 public class EntrevistaMapper {
     public static EntrevistaDTO toDTO(Entrevista entrevista) {
+        // Convertimos la entidad JPA a DTO para enviar a la vista solo los datos necesarios.
+        // Asi no exponemos relaciones completas como Postulante o ResultadoEntrevista al JSP.
         EntrevistaDTO dto = new EntrevistaDTO();
         dto.setId(entrevista.getId());
         dto.setTipoEntrevista(entrevista.getTipoEntrevista() == null ? null : entrevista.getTipoEntrevista().name());
@@ -17,10 +19,12 @@ public class EntrevistaMapper {
         dto.setObservacion(entrevista.getObservacion());
         dto.setEstadoEntrevista(entrevista.getEstadoEntrevista() == null ? null : entrevista.getEstadoEntrevista().name());
         if (entrevista.getPostulante() != null) {
+            // Del postulante solo se envia id y nombre; no toda la entidad ni sus relaciones.
             dto.setPostulanteId(entrevista.getPostulante().getId());
             dto.setPostulanteNombre(entrevista.getPostulante().getNombre());
         }
         if (entrevista.getResultadoEntrevista() != null) {
+            // Del resultado solo se envia un resumen para evitar dependencias innecesarias en la vista.
             dto.setResultadoEntrevistaId(entrevista.getResultadoEntrevista().getId());
             if (entrevista.getResultadoEntrevista().getResultado() != null) {
                 dto.setResultadoEntrevistaValor(entrevista.getResultadoEntrevista().getResultado().name());

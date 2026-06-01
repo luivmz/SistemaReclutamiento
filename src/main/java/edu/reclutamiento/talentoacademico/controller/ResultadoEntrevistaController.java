@@ -99,7 +99,11 @@ public class ResultadoEntrevistaController {
             r.setEntrevista(existente.getEntrevista());
         }
         if (resultado != null && !resultado.isBlank()) {
-            r.setResultado(EstadoResultado.valueOf(resultado));
+            try {
+                r.setResultado(EstadoResultado.valueOf(resultado));
+            } catch (IllegalArgumentException ex) {
+                r.setResultado(EstadoResultado.PENDIENTE);
+            }
         }
         r.setPuntaje(puntaje);
         r.setObservacion(observacion);

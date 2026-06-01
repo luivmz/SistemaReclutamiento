@@ -33,7 +33,11 @@ public class PostulanteController {
         if ("ADMIN".equals(session.getAttribute("rol"))) {
             return "redirect:/acceso-denegado";
         }
-        model.addAttribute("oferta", ofertaService.buscar(id));
+        var oferta = ofertaService.buscarActiva(id);
+        if (oferta == null) {
+            return "redirect:/ofertas";
+        }
+        model.addAttribute("oferta", oferta);
         model.addAttribute("postulante", new PostulanteDTO());
         return "postulante/postular";
     }
@@ -45,14 +49,22 @@ public class PostulanteController {
         if ("ADMIN".equals(session.getAttribute("rol"))) {
             return "redirect:/acceso-denegado";
         }
-        if (postulanteService.yaPostulo(usuarioId, id)) {
-            model.addAttribute("oferta", ofertaService.buscar(id));
-            model.addAttribute("error", "Ya postulaste a esta oferta.");
+        try {
+            if (postulanteService.yaPostulo(usuarioId, id)) {
+                model.addAttribute("oferta", ofertaService.buscarActiva(id));
+                model.addAttribute("error", "Ya postulaste a esta oferta.");
+                model.addAttribute("postulante", postulante);
+                return "postulante/postular";
+            }
+            postulante.setOfertaId(id);
+            postulanteService.postular(postulante, usuarioId);
+            return "redirect:/postulante/mis-postulaciones";
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            model.addAttribute("oferta", ofertaService.buscarActiva(id));
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("postulante", postulante);
             return "postulante/postular";
         }
-        postulante.setOfertaId(id);
-        postulanteService.postular(postulante, usuarioId);
-        return "redirect:/postulante/mis-postulaciones";
     }
 
     @GetMapping("/postulante/mis-postulaciones")
@@ -72,6 +84,24 @@ public class PostulanteController {
         model.addAttribute("postulacion", postulacion);
         model.addAttribute("entrevistas", entrevistaService.listarPorPostulante(id));
         return "postulante/estado";
+    }
+
+    @PostMapping("/postulante/postulaciones/{id}/cancelar")
+    public String cancelar(@PathVariable Long id, HttpSession session, Model model) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        try {
+            postulanteService.cancelar(id, usuarioId);
+            return "redirect:/postulante/mis-postulaciones";
+        } catch (IllegalStateException ex) {
+            PostulanteDTO postulacion = postulanteService.buscar(id);
+            if (postulacion == null || !usuarioId.equals(postulacion.getUsuarioId())) {
+                return "redirect:/acceso-denegado";
+            }
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("postulacion", postulacion);
+            model.addAttribute("entrevistas", entrevistaService.listarPorPostulante(id));
+            return "postulante/estado";
+        }
     }
 
     @GetMapping("/postulante/historial")
@@ -110,7 +140,7 @@ public class PostulanteController {
                 postulanteService.actualizar(postulante, usuarioActual(session));
             }
             return "redirect:/admin/postulantes";
-        } catch (IllegalStateException ex) {
+        } catch (IllegalStateException | IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
             model.addAttribute("activos", postulanteService.listarActivos());
             model.addAttribute("historial", postulanteService.listarHistorial());

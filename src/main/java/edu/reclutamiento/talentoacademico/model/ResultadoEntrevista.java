@@ -15,6 +15,8 @@ public class ResultadoEntrevista {
     @JoinColumn(name = "entrevista_id", unique = true, nullable = false)
     private Entrevista entrevista;
 
+    // @Enumerated(EnumType.STRING) guarda resultados validos y legibles
+    // como PENDIENTE, APROBADO o DESAPROBADO.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private EstadoResultado resultado = EstadoResultado.PENDIENTE;

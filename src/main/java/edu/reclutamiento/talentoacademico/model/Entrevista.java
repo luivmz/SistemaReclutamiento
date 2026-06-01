@@ -12,6 +12,8 @@ public class Entrevista {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // @Enumerated(EnumType.STRING) guarda el nombre del enum en la BD.
+    // Esto evita valores escritos libremente y mantiene datos legibles como NORMAL o PSICOLOGICA.
     @Enumerated(EnumType.STRING)
     private TipoEntrevista tipoEntrevista = TipoEntrevista.NORMAL;
 
@@ -23,6 +25,8 @@ public class Entrevista {
     @Column(length = 700)
     private String observacion;
 
+    // @Enumerated(EnumType.STRING) limita los estados permitidos de la entrevista
+    // y los guarda como texto: PROGRAMADA, REALIZADA o CANCELADA.
     @Enumerated(EnumType.STRING)
     private EstadoEntrevista estadoEntrevista = EstadoEntrevista.PROGRAMADA;
 

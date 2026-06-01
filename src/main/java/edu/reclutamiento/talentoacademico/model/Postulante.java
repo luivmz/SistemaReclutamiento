@@ -24,6 +24,9 @@ public class Postulante {
     private String cv;
     private LocalDate fechaPostulacion = LocalDate.now();
 
+    // @Enumerated(EnumType.STRING) guarda el nombre del enum en la BD.
+    // Asi solo se usan estados validos como POSTULADO, APROBADO o CANCELADO,
+    // y la tabla queda mas legible que si se guardaran numeros.
     @Enumerated(EnumType.STRING)
     private EstadoPostulante estado = EstadoPostulante.POSTULADO;
 
@@ -42,7 +45,8 @@ public class Postulante {
 
     public boolean estaEnHistorial() {
         return estado == EstadoPostulante.APROBADO
-                || estado == EstadoPostulante.RECHAZADO;
+                || estado == EstadoPostulante.RECHAZADO
+                || estado == EstadoPostulante.CANCELADO;
     }
 
     public Long getId() { return id; }

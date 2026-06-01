@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface OfertaRepository extends JpaRepository<OfertaLaboral, Long> {
     List<OfertaLaboral> findByActivaTrue();
+    List<OfertaLaboral> findByActivaTrueAndAreaActivaTrue();
 }

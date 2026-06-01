@@ -54,12 +54,14 @@ public class AdminController {
     private void cargarMetricas(Model model) {
         model.addAttribute("usuarios", usuarioService.listar().size());
         model.addAttribute("ofertas", ofertaService.listar().size());
+        model.addAttribute("ofertasActivas", ofertaService.listarActivas().size());
         model.addAttribute("activos", postulanteService.listarActivos().size());
         model.addAttribute("historial", historialPostulanteService.listar().size());
         model.addAttribute("entrevistas", entrevistaService.listar().size());
         model.addAttribute("entrevistasProgramadas", entrevistaService.contarPorEstado(EstadoEntrevista.PROGRAMADA));
         model.addAttribute("aprobados", postulanteService.contarPorEstado(EstadoPostulante.APROBADO));
         model.addAttribute("rechazados", postulanteService.contarPorEstado(EstadoPostulante.RECHAZADO));
+        model.addAttribute("cancelados", postulanteService.contarPorEstado(EstadoPostulante.CANCELADO));
     }
 
     @GetMapping("/admin/usuarios")
@@ -77,9 +79,16 @@ public class AdminController {
     }
 
     @PostMapping("/admin/usuarios")
-    public String guardarUsuario(@ModelAttribute UsuarioDTO usuario) {
-        usuarioService.guardar(usuario);
-        return "redirect:/admin/usuarios";
+    public String guardarUsuario(@ModelAttribute UsuarioDTO usuario, Model model) {
+        try {
+            usuarioService.guardar(usuario);
+            return "redirect:/admin/usuarios";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("usuarios", usuarioService.listar());
+            model.addAttribute("usuario", usuario);
+            return "admin/usuarios";
+        }
     }
 
     @GetMapping("/admin/usuarios/desactivar/{id}")
@@ -109,14 +118,27 @@ public class AdminController {
     }
 
     @PostMapping("/admin/areas")
-    public String guardarArea(@ModelAttribute Area area) {
-        areaService.guardar(area);
-        return "redirect:/admin/areas";
+    public String guardarArea(@ModelAttribute Area area, Model model) {
+        try {
+            areaService.guardar(area);
+            return "redirect:/admin/areas";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("areas", areaService.listar());
+            model.addAttribute("area", area);
+            return "admin/areas";
+        }
     }
 
     @GetMapping("/admin/areas/eliminar/{id}")
     public String eliminarArea(@PathVariable Long id) {
         areaService.eliminar(id);
+        return "redirect:/admin/areas";
+    }
+
+    @GetMapping("/admin/areas/activar/{id}")
+    public String activarArea(@PathVariable Long id) {
+        areaService.activar(id);
         return "redirect:/admin/areas";
     }
 
@@ -141,7 +163,7 @@ public class AdminController {
         try {
             entrevistaService.guardar(entrevista, usuarioActual(session));
             return "redirect:/admin/entrevistas";
-        } catch (IllegalStateException ex) {
+        } catch (IllegalStateException | IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
             model.addAttribute("entrevistas", entrevistaService.listar());
             model.addAttribute("postulantes", postulanteService.listarActivos());

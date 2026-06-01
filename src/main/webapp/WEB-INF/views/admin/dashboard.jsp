@@ -11,11 +11,13 @@
     <div class="grid">
         <section class="card"><h3>Usuarios</h3><p>${usuarios}</p></section>
         <section class="card"><h3>Ofertas Docentes</h3><p>${ofertas}</p></section>
+        <section class="card"><h3>Ofertas Activas</h3><p>${ofertasActivas}</p></section>
         <section class="card"><h3>Postulantes</h3><p>${activos}</p></section>
         <section class="card"><h3>Entrevistas</h3><p>${entrevistas}</p></section>
         <section class="card"><h3>Programadas</h3><p>${entrevistasProgramadas}</p></section>
         <section class="card"><h3>Aprobados</h3><p>${aprobados}</p></section>
         <section class="card"><h3>Rechazados</h3><p>${rechazados}</p></section>
+        <section class="card"><h3>Cancelados</h3><p>${cancelados}</p></section>
         <section class="card"><h3>Historial</h3><p>${historial}</p></section>
     </div>
     <h2>Opciones</h2>

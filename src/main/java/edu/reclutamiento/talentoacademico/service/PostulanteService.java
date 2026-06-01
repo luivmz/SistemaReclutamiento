@@ -22,4 +22,5 @@ public interface PostulanteService {
     void aprobar(Long id, String registradoPor);
     void rechazar(Long id, String registradoPor);
     void marcarEnEntrevista(Long id, String registradoPor);
+    void cancelar(Long id, Long usuarioId);
 }

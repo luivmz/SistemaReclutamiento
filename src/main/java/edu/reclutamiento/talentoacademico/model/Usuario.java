@@ -15,6 +15,8 @@ public class Usuario {
     private String password;
     private String telefono;
 
+    // @Enumerated(EnumType.STRING) guarda roles claros como ADMIN o POSTULANTE
+    // y evita depender de numeros dificiles de interpretar en la base de datos.
     @Enumerated(EnumType.STRING)
     private RolUsuario rol;
 

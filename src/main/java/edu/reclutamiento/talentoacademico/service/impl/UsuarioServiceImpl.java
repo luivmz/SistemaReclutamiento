@@ -31,6 +31,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     public UsuarioDTO guardar(UsuarioDTO dto) {
+        validar(dto);
         return UsuarioMapper.toDTO(usuarioRepository.save(UsuarioMapper.toEntity(dto)));
     }
 
@@ -45,6 +46,10 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     public Optional<Usuario> login(String email, String password) {
+        ValidationUtils.validarEmail(email);
+        if (password == null || password.isBlank()) {
+            throw new IllegalArgumentException("El password es obligatorio.");
+        }
         return usuarioRepository.findByEmailAndPasswordAndActivoTrue(email, password);
     }
 
@@ -54,5 +59,17 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarioRepository.findByEmail(email);
+    }
+
+    private void validar(UsuarioDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("El usuario no puede ser nulo.");
+        }
+        ValidationUtils.validarNombre(dto.getNombre(), "El nombre del usuario");
+        ValidationUtils.validarEmail(dto.getEmail());
+        if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+            throw new IllegalArgumentException("El password es obligatorio.");
+        }
+        ValidationUtils.validarTextoOpcional(dto.getTelefono(), "El telefono", 40);
     }
 }

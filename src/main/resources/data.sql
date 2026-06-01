@@ -5,11 +5,12 @@ INSERT INTO usuarios (id, nombre, email, password, telefono, rol, activo) VALUES
 (4, 'Camila Herrera', 'psicologia.escolar@demo.com', '123456', '999111003', 'POSTULANTE', true),
 (5, 'Rosa Delgado', 'auxiliar.educacion@demo.com', '123456', '999111004', 'POSTULANTE', true);
 
-INSERT INTO areas (id, nombre, descripcion) VALUES
-(1, 'Direccion Academica', 'Planificacion curricular, seguimiento pedagogico y gestion docente del colegio'),
-(2, 'Nivel Primaria', 'Acompanamiento academico y formativo de estudiantes de primaria'),
-(3, 'Nivel Secundaria', 'Gestion pedagogica, tutoria y convivencia en secundaria'),
-(4, 'Psicopedagogia', 'Acompanamiento socioemocional, orientacion familiar y convivencia escolar');
+INSERT INTO areas (id, nombre, descripcion, activa) VALUES
+(1, 'Direccion Academica', 'Planificacion curricular, seguimiento pedagogico y gestion docente del colegio', true),
+(2, 'Nivel Primaria', 'Acompanamiento academico y formativo de estudiantes de primaria', true),
+(3, 'Nivel Secundaria', 'Gestion pedagogica, tutoria y convivencia en secundaria', true),
+(4, 'Psicopedagogia', 'Acompanamiento socioemocional, orientacion familiar y convivencia escolar', true),
+(5, 'Talleres Extracurriculares', 'Area temporal para talleres fuera del horario escolar', false);
 
 INSERT INTO ofertas_laborales (id, titulo, descripcion, vacantes, area_id, activa) VALUES
 (1, 'Docente de Matematica', 'Planificacion de sesiones, evaluacion formativa, tutoria y acompanamiento academico de estudiantes de secundaria.', 2, 3, true),
@@ -17,7 +18,8 @@ INSERT INTO ofertas_laborales (id, titulo, descripcion, vacantes, area_id, activ
 (3, 'Auxiliar de Educacion Inicial', 'Apoyo en rutinas escolares, cuidado de estudiantes pequenos y comunicacion permanente con familias.', 1, 2, true),
 (4, 'Psicologo Escolar', 'Acompanamiento socioemocional, orientacion a padres, tutorias y apoyo a la convivencia escolar.', 2, 4, true),
 (5, 'Asistente Administrativo Escolar', 'Gestion de matriculas, atencion a familias y organizacion documentaria del colegio.', 2, 1, true),
-(6, 'Coordinador Academico', 'Seguimiento de planificacion curricular, acompanamiento pedagogico a docentes y desarrollo academico de estudiantes.', 1, 1, true);
+(6, 'Coordinador Academico', 'Seguimiento de planificacion curricular, acompanamiento pedagogico a docentes y desarrollo academico de estudiantes.', 1, 1, true),
+(7, 'Monitor de Taller Artistico', 'Apoyo temporal para talleres extracurriculares del colegio.', 1, 5, false);
 
 INSERT INTO postulantes (id, nombre, email, telefono, experiencia, habilidades, cv, fecha_postulacion, estado, oferta_id, usuario_id, aprobado, observacion) VALUES
 (1, 'Mariana Torres', 'docente.matematica@demo.com', '999111001', 'Tres anos dictando matematica en secundaria y preparando sesiones por competencias', 'Manejo de aula, evaluacion formativa, planificacion curricular, uso de recursos didacticos', 'cv_mariana_torres_matematica.pdf', DATE '2026-05-10', 'POSTULADO', 1, 2, false, 'Postulacion registrada para revision de experiencia docente.'),
@@ -27,7 +29,8 @@ INSERT INTO postulantes (id, nombre, email, telefono, experiencia, habilidades, 
 (5, 'Mariana Torres', 'docente.matematica@demo.com', '999111001', 'Experiencia en coordinacion de proyectos academicos y acompanamiento docente', 'Planificacion curricular, liderazgo pedagogico, evaluacion por competencias, trabajo con familias', 'cv_mariana_torres_coordinacion.pdf', DATE '2026-05-14', 'EN_ENTREVISTA', 6, 2, false, 'Evaluacion con coordinacion academica pendiente.'),
 (6, 'Luis Ramirez', 'docente.comunicacion@demo.com', '999111002', 'Trabajo administrativo escolar en secretaria academica y atencion a familias', 'Organizacion documentaria, trato con padres, registro de matriculas, Excel', 'cv_luis_ramirez_administrativo.pdf', DATE '2026-05-15', 'APROBADO', 5, 3, true, 'Postulante aprobado para apoyo administrativo escolar.'),
 (7, 'Camila Herrera', 'psicologia.escolar@demo.com', '999111003', 'Experiencia en talleres de convivencia y tutoria para estudiantes de secundaria', 'Tutoria escolar, mediacion, comunicacion asertiva, trabajo con familias', 'cv_camila_herrera_tutoria.pdf', DATE '2026-05-16', 'RECHAZADO', 4, 4, false, 'Requiere fortalecer estrategias de intervencion en convivencia escolar.'),
-(8, 'Rosa Delgado', 'auxiliar.educacion@demo.com', '999111004', 'Apoyo docente en primaria y seguimiento de tareas con estudiantes', 'Manejo de grupo, paciencia, comunicacion con familias, apoyo pedagogico', 'cv_rosa_delgado_primaria.pdf', DATE '2026-05-17', 'APROBADO', 2, 5, true, 'Aprobada por buen desempeno en entrevista con coordinacion primaria.');
+(8, 'Rosa Delgado', 'auxiliar.educacion@demo.com', '999111004', 'Apoyo docente en primaria y seguimiento de tareas con estudiantes', 'Manejo de grupo, paciencia, comunicacion con familias, apoyo pedagogico', 'cv_rosa_delgado_primaria.pdf', DATE '2026-05-17', 'APROBADO', 2, 5, true, 'Aprobada por buen desempeno en entrevista con coordinacion primaria.'),
+(9, 'Mariana Torres', 'docente.matematica@demo.com', '999111001', 'Interes en apoyar talleres extracurriculares del colegio', 'Planificacion de talleres, comunicacion con estudiantes, orden en aula', 'https://drive.google.com/demo-cv-mariana-taller', DATE '2026-05-18', 'CANCELADO', 7, 2, false, 'Postulacion cancelada por el postulante');
 
 INSERT INTO entrevistas (id, tipo_entrevista, fecha, hora, lugar, modalidad, observacion, estado_entrevista, postulante_id) VALUES
 (1, 'NORMAL', DATE '2026-05-20', TIME '09:00:00', 'Sala de Direccion', 'PRESENCIAL', 'Entrevista docente para revisar manejo de aula y planificacion de sesiones.', 'PROGRAMADA', 4),
@@ -49,12 +52,13 @@ INSERT INTO historial_postulantes (id, postulante_id, estado_anterior, estado_nu
 (5, 7, 'POSTULADO', 'EN_ENTREVISTA', TIMESTAMP '2026-05-19 10:30:00', 'Avanza a entrevista psicologica por perfil de psicopedagogia.', 'Administrador Colegio'),
 (6, 7, 'EN_ENTREVISTA', 'RECHAZADO', TIMESTAMP '2026-05-21 16:10:00', 'Rechazado por no cumplir el perfil esperado para convivencia escolar.', 'Administrador Colegio'),
 (7, 8, 'POSTULADO', 'EN_ENTREVISTA', TIMESTAMP '2026-05-20 08:30:00', 'Derivada a entrevista con coordinacion de primaria.', 'Administrador Colegio'),
-(8, 8, 'EN_ENTREVISTA', 'APROBADO', TIMESTAMP '2026-05-22 09:00:00', 'Aprobada por buen manejo de grupo y comunicacion con familias.', 'Administrador Colegio');
+(8, 8, 'EN_ENTREVISTA', 'APROBADO', TIMESTAMP '2026-05-22 09:00:00', 'Aprobada por buen manejo de grupo y comunicacion con familias.', 'Administrador Colegio'),
+(9, 9, 'POSTULADO', 'CANCELADO', TIMESTAMP '2026-05-22 10:30:00', 'Postulacion cancelada por el postulante', 'Mariana Torres');
 
 ALTER TABLE usuarios ALTER COLUMN id RESTART WITH 6;
-ALTER TABLE areas ALTER COLUMN id RESTART WITH 5;
-ALTER TABLE ofertas_laborales ALTER COLUMN id RESTART WITH 7;
-ALTER TABLE postulantes ALTER COLUMN id RESTART WITH 9;
+ALTER TABLE areas ALTER COLUMN id RESTART WITH 6;
+ALTER TABLE ofertas_laborales ALTER COLUMN id RESTART WITH 8;
+ALTER TABLE postulantes ALTER COLUMN id RESTART WITH 10;
 ALTER TABLE entrevistas ALTER COLUMN id RESTART WITH 6;
 ALTER TABLE resultados_entrevista ALTER COLUMN id RESTART WITH 4;
-ALTER TABLE historial_postulantes ALTER COLUMN id RESTART WITH 9;
+ALTER TABLE historial_postulantes ALTER COLUMN id RESTART WITH 10;

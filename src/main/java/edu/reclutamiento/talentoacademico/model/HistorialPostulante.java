@@ -15,10 +15,12 @@ public class HistorialPostulante {
     @JoinColumn(name = "postulante_id", nullable = false)
     private Postulante postulante;
 
+    // Guardamos el estado anterior como texto para que el historial sea entendible en la BD.
     @Enumerated(EnumType.STRING)
     @Column(name = "estado_anterior")
     private EstadoPostulante estadoAnterior;
 
+    // Guardamos el estado nuevo como enum textual para evitar estados invalidos en el historial.
     @Enumerated(EnumType.STRING)
     @Column(name = "estado_nuevo", nullable = false)
     private EstadoPostulante estadoNuevo;

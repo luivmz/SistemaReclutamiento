@@ -38,10 +38,10 @@
         <input type="number" name="puntaje" min="0" max="100" value="${resultado.puntaje}">
 
         <label>Observacion</label>
-        <textarea name="observacion" rows="3">${resultado.observacion}</textarea>
+        <textarea name="observacion" rows="3" maxlength="700">${resultado.observacion}</textarea>
 
         <label>Recomendacion</label>
-        <textarea name="recomendacion" rows="3">${resultado.recomendacion}</textarea>
+        <textarea name="recomendacion" rows="3" maxlength="700">${resultado.recomendacion}</textarea>
 
         <button type="submit">Guardar resultado</button>
         <a class="btn secundario" href="/admin/entrevistas">Volver a entrevistas</a>

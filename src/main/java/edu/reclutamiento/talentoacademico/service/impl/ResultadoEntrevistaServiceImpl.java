@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+// @Transactional protege el registro del resultado: se guarda el resultado,
+// se actualiza la entrevista, se cambia el postulante y se registra historial como una sola operacion.
 @Transactional
 public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaService {
 
@@ -35,6 +37,7 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         this.historialPostulanteService = historialPostulanteService;
     }
 
+    // readOnly indica que este listado no debe cambiar resultados ni estados.
     @Transactional(readOnly = true)
     public List<ResultadoEntrevista> listar() {
         return resultadoRepository.findAll();
@@ -65,6 +68,7 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
     }
 
     public ResultadoEntrevista guardar(ResultadoEntrevista resultado, String registradoPor) {
+        validar(resultado);
         if (resultado.getEntrevista() == null || resultado.getEntrevista().getId() == null) {
             throw new IllegalArgumentException("La entrevista es obligatoria para registrar el resultado.");
         }
@@ -90,6 +94,7 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
 
         ResultadoEntrevista guardado = resultadoRepository.save(resultado);
 
+        // Estas actualizaciones dependen del resultado guardado y deben confirmarse juntas.
         actualizarEstadoEntrevista(entrevista);
         actualizarEstadoPostulante(entrevista.getPostulante(), guardado.getResultado(), registradoPor);
 
@@ -109,9 +114,10 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
             entrevistaRepository.save(entrevista);
 
             Postulante postulante = entrevista.getPostulante();
-            if (postulante != null
+        if (postulante != null
                     && postulante.getEstado() != EstadoPostulante.APROBADO
-                    && postulante.getEstado() != EstadoPostulante.RECHAZADO) {
+                    && postulante.getEstado() != EstadoPostulante.RECHAZADO
+                    && postulante.getEstado() != EstadoPostulante.CANCELADO) {
                 postulante.setEstado(EstadoPostulante.EN_ENTREVISTA);
                 postulanteRepository.save(postulante);
             }
@@ -144,7 +150,27 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
             observacionHistorial = "Resultado pendiente.";
         }
         Postulante guardado = postulanteRepository.save(postulante);
+        // El historial permite auditar por que cambio el estado del postulante.
         historialPostulanteService.registrarCambioEstado(
                 guardado, estadoAnterior, guardado.getEstado(), observacionHistorial, registradoPor);
+    }
+
+    private void validar(ResultadoEntrevista resultado) {
+        if (resultado == null) {
+            throw new IllegalArgumentException("El resultado no puede ser nulo.");
+        }
+        if (resultado.getResultado() == null) {
+            resultado.setResultado(EstadoResultado.PENDIENTE);
+        }
+        ValidationUtils.validarEnteroNoNegativo(resultado.getPuntaje(), "El puntaje");
+        if (resultado.getPuntaje() != null && resultado.getPuntaje() > 100) {
+            throw new IllegalArgumentException("El puntaje no debe superar 100.");
+        }
+        if (resultado.getResultado() != EstadoResultado.PENDIENTE) {
+            ValidationUtils.validarTextoObligatorio(resultado.getObservacion(), "La observacion del resultado", 700);
+        } else {
+            ValidationUtils.validarTextoOpcional(resultado.getObservacion(), "La observacion del resultado", 700);
+        }
+        ValidationUtils.validarTextoOpcional(resultado.getRecomendacion(), "La recomendacion", 700);
     }
 }

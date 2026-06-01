@@ -11,16 +11,21 @@
     <h2 class="page-title">Ofertas Docentes</h2>
     <form method="post" action="/admin/ofertas" class="card">
         <input type="hidden" name="id" value="${oferta.id}">
-        <label>Titulo</label><input name="titulo" value="${oferta.titulo}" required>
-        <label>Descripcion</label><textarea name="descripcion">${oferta.descripcion}</textarea>
-        <label>Vacantes</label><input type="number" name="vacantes" value="${oferta.vacantes == null ? 1 : oferta.vacantes}">
+        <c:if test="${not empty error}"><p class="error">${error}</p></c:if>
+        <label>Titulo</label><input name="titulo" value="${oferta.titulo}" minlength="2" maxlength="120" required>
+        <label>Descripcion</label><textarea name="descripcion" maxlength="800" required>${oferta.descripcion}</textarea>
+        <label>Vacantes</label><input type="number" name="vacantes" min="0" value="${oferta.vacantes == null ? 1 : oferta.vacantes}" required>
         <label>Area academica</label>
-        <select name="areaId">
+        <select name="areaId" required>
             <c:forEach var="area" items="${areas}">
-                <option value="${area.id}">${area.nombre}</option>
+                <option value="${area.id}" <c:if test="${area.id == oferta.areaId}">selected</c:if>>${area.nombre}</option>
             </c:forEach>
         </select>
-        <label>Activa</label><select name="activa"><option value="true">Si</option><option value="false">No</option></select>
+        <label>Activa</label>
+        <select name="activa">
+            <option value="true" <c:if test="${oferta.activa != false}">selected</c:if>>Si</option>
+            <option value="false" <c:if test="${oferta.activa == false}">selected</c:if>>No</option>
+        </select>
         <button type="submit">Guardar</button>
         <a class="btn secundario" href="/admin/ofertas">Nuevo</a>
     </form>

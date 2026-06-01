@@ -7,12 +7,18 @@
 <%@ include file="../includes/public-header.jsp" %>
 <main>
     <h2>Estado del Proceso</h2>
+    <c:if test="${not empty error}"><p class="error">${error}</p></c:if>
     <section class="card">
         <h3>${postulacion.ofertaTitulo}</h3>
         <p><strong>Area academica:</strong> ${postulacion.areaNombre}</p>
         <p><strong>Estado actual:</strong> ${postulacion.estado}</p>
         <p><strong>Resultado:</strong> ${postulacion.aprobado}</p>
         <p><strong>Observacion:</strong> ${postulacion.observacion}</p>
+        <c:if test="${postulacion.estado == 'POSTULADO' || postulacion.estado == 'EN_ENTREVISTA'}">
+            <form method="post" action="/postulante/postulaciones/${postulacion.id}/cancelar" onsubmit="return confirm('Deseas cancelar esta postulacion?');">
+                <button type="submit" class="btn secundario">Cancelar postulacion</button>
+            </form>
+        </c:if>
     </section>
 
     <h3>Entrevistas Programadas</h3>

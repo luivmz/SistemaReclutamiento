@@ -11,12 +11,21 @@
     <h2 class="page-title">Usuarios</h2>
     <form method="post" action="/admin/usuarios" class="card">
         <input type="hidden" name="id" value="${usuario.id}">
-        <label>Nombre</label><input name="nombre" value="${usuario.nombre}" required>
-        <label>Email</label><input type="email" name="email" value="${usuario.email}" required>
-        <label>Telefono</label><input name="telefono" value="${usuario.telefono}">
+        <c:if test="${not empty error}"><p class="error">${error}</p></c:if>
+        <label>Nombre</label><input name="nombre" value="${usuario.nombre}" minlength="2" maxlength="120" required>
+        <label>Email</label><input type="email" name="email" value="${usuario.email}" maxlength="120" required>
+        <label>Telefono</label><input name="telefono" value="${usuario.telefono}" maxlength="40">
         <label>Password</label><input name="password" value="${usuario.password}" required>
-        <label>Rol</label><select name="rol"><option>ADMIN</option><option>POSTULANTE</option></select>
-        <label>Activo</label><select name="activo"><option value="true">Si</option><option value="false">No</option></select>
+        <label>Rol</label>
+        <select name="rol">
+            <option value="ADMIN" <c:if test="${usuario.rol == 'ADMIN'}">selected</c:if>>ADMIN</option>
+            <option value="POSTULANTE" <c:if test="${usuario.rol == 'POSTULANTE'}">selected</c:if>>POSTULANTE</option>
+        </select>
+        <label>Activo</label>
+        <select name="activo">
+            <option value="true" <c:if test="${usuario.activo != false}">selected</c:if>>Si</option>
+            <option value="false" <c:if test="${usuario.activo == false}">selected</c:if>>No</option>
+        </select>
         <button type="submit">Guardar</button>
         <a class="btn secundario" href="/admin/usuarios">Nuevo</a>
     </form>

@@ -27,23 +27,35 @@ public class OfertaServiceImpl implements OfertaService {
     }
 
     public List<OfertaDTO> listarActivas() {
-        return ofertaRepository.findByActivaTrue().stream().map(OfertaMapper::toDTO).toList();
+        // El listado publico solo muestra ofertas activas y con area activa.
+        return ofertaRepository.findByActivaTrueAndAreaActivaTrue().stream().map(OfertaMapper::toDTO).toList();
     }
 
     public OfertaDTO buscar(Long id) {
         return ofertaRepository.findById(id).map(OfertaMapper::toDTO).orElse(null);
     }
 
+    public OfertaDTO buscarActiva(Long id) {
+        return ofertaRepository.findById(id)
+                .filter(oferta -> Boolean.TRUE.equals(oferta.getActiva()))
+                .filter(oferta -> oferta.getArea() == null || Boolean.TRUE.equals(oferta.getArea().getActiva()))
+                .map(OfertaMapper::toDTO)
+                .orElse(null);
+    }
+
     public OfertaDTO guardar(OfertaDTO dto) {
         validar(dto);
         OfertaLaboral oferta = new OfertaLaboral();
         oferta.setId(dto.getId());
-        oferta.setTitulo(dto.getTitulo());
-        oferta.setDescripcion(dto.getDescripcion());
+        oferta.setTitulo(ValidationUtils.normalizar(dto.getTitulo()));
+        oferta.setDescripcion(ValidationUtils.normalizar(dto.getDescripcion()));
         oferta.setVacantes(dto.getVacantes());
         oferta.setActiva(dto.getActiva() == null || dto.getActiva());
         if (dto.getAreaId() != null) {
             Area area = areaRepository.findById(dto.getAreaId()).orElse(null);
+            if (area != null && !Boolean.TRUE.equals(area.getActiva())) {
+                throw new IllegalArgumentException("No se puede asignar una oferta a un area inactiva.");
+            }
             oferta.setArea(area);
         }
         return OfertaMapper.toDTO(ofertaRepository.save(oferta));
@@ -67,11 +79,14 @@ public class OfertaServiceImpl implements OfertaService {
         if (dto == null) {
             throw new IllegalArgumentException("La oferta no puede ser nula.");
         }
-        if (dto.getTitulo() == null || dto.getTitulo().isBlank()) {
-            throw new IllegalArgumentException("El titulo es obligatorio.");
+        ValidationUtils.validarNombre(dto.getTitulo(), "El titulo de la oferta");
+        ValidationUtils.validarTextoObligatorio(dto.getDescripcion(), "La descripcion de la oferta", 800);
+        if (dto.getVacantes() == null) {
+            throw new IllegalArgumentException("Las vacantes son obligatorias.");
         }
-        if (dto.getVacantes() == null || dto.getVacantes() <= 0) {
-            throw new IllegalArgumentException("Las vacantes deben ser mayores a 0.");
+        ValidationUtils.validarEnteroNoNegativo(dto.getVacantes(), "Las vacantes");
+        if (dto.getAreaId() == null) {
+            throw new IllegalArgumentException("Debe seleccionar un area academica.");
         }
     }
 }
