@@ -2,11 +2,14 @@ package edu.reclutamiento.talentoacademico.service.impl;
 
 import edu.reclutamiento.talentoacademico.dto.PostulanteDTO;
 import edu.reclutamiento.talentoacademico.mapper.PostulanteMapper;
+import edu.reclutamiento.talentoacademico.model.Entrevista;
+import edu.reclutamiento.talentoacademico.model.EstadoEntrevista;
 import edu.reclutamiento.talentoacademico.model.EstadoPostulante;
 import edu.reclutamiento.talentoacademico.model.OfertaLaboral;
 import edu.reclutamiento.talentoacademico.model.Postulante;
 import edu.reclutamiento.talentoacademico.model.Usuario;
 import edu.reclutamiento.talentoacademico.repository.OfertaRepository;
+import edu.reclutamiento.talentoacademico.repository.EntrevistaRepository;
 import edu.reclutamiento.talentoacademico.repository.PostulanteRepository;
 import edu.reclutamiento.talentoacademico.repository.UsuarioRepository;
 import edu.reclutamiento.talentoacademico.service.HistorialPostulanteService;
@@ -19,14 +22,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostulanteServiceImpl implements PostulanteService {
     private final PostulanteRepository postulanteRepository;
     private final OfertaRepository ofertaRepository;
+    private final EntrevistaRepository entrevistaRepository;
     private final UsuarioRepository usuarioRepository;
     private final HistorialPostulanteService historialPostulanteService;
 
     public PostulanteServiceImpl(PostulanteRepository postulanteRepository, OfertaRepository ofertaRepository,
+                                 EntrevistaRepository entrevistaRepository,
                                  UsuarioRepository usuarioRepository,
                                  HistorialPostulanteService historialPostulanteService) {
         this.postulanteRepository = postulanteRepository;
         this.ofertaRepository = ofertaRepository;
+        this.entrevistaRepository = entrevistaRepository;
         this.usuarioRepository = usuarioRepository;
         this.historialPostulanteService = historialPostulanteService;
     }
@@ -111,6 +117,9 @@ public class PostulanteServiceImpl implements PostulanteService {
         }
         asignarOferta(dto, postulante);
         Postulante guardado = postulanteRepository.save(postulante);
+        if (guardado.getEstado() == EstadoPostulante.CANCELADO) {
+            cancelarEntrevistasProgramadas(guardado.getId());
+        }
         // Si el estado no cambio, el servicio de historial no registra nada.
         historialPostulanteService.registrarCambioEstado(
                 guardado, estadoAnterior, guardado.getEstado(), dto.getObservacion(), registradoPor);
@@ -154,6 +163,11 @@ public class PostulanteServiceImpl implements PostulanteService {
         postulante.setAprobado(false);
         postulante.setObservacion("Postulacion cancelada por el postulante");
         Postulante guardado = postulanteRepository.save(postulante);
+
+        // Cancelar la postulacion tambien cierra sus entrevistas pendientes.
+        // Las entrevistas realizadas y sus resultados se conservan como evidencia.
+        cancelarEntrevistasProgramadas(id);
+
         // El historial deja evidencia academica del cambio de estado realizado por el postulante.
         historialPostulanteService.registrarCambioEstado(
                 guardado, estadoAnterior, EstadoPostulante.CANCELADO,
@@ -201,8 +215,21 @@ public class PostulanteServiceImpl implements PostulanteService {
             postulante.setObservacion(observacion);
         }
         Postulante guardado = postulanteRepository.save(postulante);
+        if (estado == EstadoPostulante.CANCELADO) {
+            cancelarEntrevistasProgramadas(guardado.getId());
+        }
         historialPostulanteService.registrarCambioEstado(
                 guardado, estadoAnterior, estado, observacion, registradoPor);
+    }
+
+    private void cancelarEntrevistasProgramadas(Long postulanteId) {
+        List<Entrevista> entrevistasProgramadas = entrevistaRepository
+                .findByPostulanteIdAndEstadoEntrevista(postulanteId, EstadoEntrevista.PROGRAMADA);
+        entrevistasProgramadas.forEach(entrevista -> {
+            entrevista.setEstadoEntrevista(EstadoEntrevista.CANCELADA);
+            entrevista.setObservacion("Entrevista cancelada por cancelacion de la postulacion.");
+        });
+        entrevistaRepository.saveAll(entrevistasProgramadas);
     }
 
     private void asignarOferta(PostulanteDTO dto, Postulante postulante) {

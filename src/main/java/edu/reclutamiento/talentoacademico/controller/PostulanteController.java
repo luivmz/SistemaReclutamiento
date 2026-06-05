@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class PostulanteController {
@@ -98,6 +99,22 @@ public class PostulanteController {
             model.addAttribute("postulacion", postulacion);
             model.addAttribute("entrevistas", entrevistaService.listarPorPostulante(id));
             return "postulante/estado";
+        }
+    }
+
+    @PostMapping("/postulante/entrevistas/{id}/cancelar")
+    public String cancelarEntrevista(@PathVariable Long id, HttpSession session,
+                                     RedirectAttributes redirectAttributes) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        try {
+            Long postulanteId = entrevistaService.cancelarEntrevista(id, usuarioId);
+            redirectAttributes.addFlashAttribute("mensaje", "Entrevista cancelada correctamente.");
+            return "redirect:/postulante/postulaciones/" + postulanteId + "/estado";
+        } catch (SecurityException ex) {
+            return "redirect:/acceso-denegado";
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+            return "redirect:/postulante/mis-postulaciones";
         }
     }
 

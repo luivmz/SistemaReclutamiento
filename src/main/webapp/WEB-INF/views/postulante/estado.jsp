@@ -8,6 +8,7 @@
 <main>
     <h2>Estado del Proceso</h2>
     <c:if test="${not empty error}"><p class="error">${error}</p></c:if>
+    <c:if test="${not empty mensaje}"><p class="success">${mensaje}</p></c:if>
     <section class="card">
         <h3>${postulacion.ofertaTitulo}</h3>
         <p><strong>Area academica:</strong> ${postulacion.areaNombre}</p>
@@ -36,6 +37,7 @@
                     <th>Modalidad</th>
                     <th>Estado</th>
                     <th>Resultado</th>
+                    <th>Accion</th>
                 </tr>
                 <c:forEach var="e" items="${entrevistas}">
                     <tr>
@@ -46,6 +48,14 @@
                         <td>${e.modalidad}</td>
                         <td>${e.estadoEntrevista}</td>
                         <td>${e.resultadoEntrevistaValor}</td>
+                        <td>
+                            <c:if test="${e.estadoEntrevista == 'PROGRAMADA'}">
+                                <form method="post" action="/postulante/entrevistas/${e.id}/cancelar"
+                                      onsubmit="return confirm('Deseas cancelar esta entrevista?');">
+                                    <button type="submit" class="btn secundario">Cancelar entrevista</button>
+                                </form>
+                            </c:if>
+                        </td>
                     </tr>
                 </c:forEach>
             </table>

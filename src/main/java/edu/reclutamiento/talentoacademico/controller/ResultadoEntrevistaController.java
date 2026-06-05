@@ -1,6 +1,8 @@
 package edu.reclutamiento.talentoacademico.controller;
 
 import edu.reclutamiento.talentoacademico.model.Entrevista;
+import edu.reclutamiento.talentoacademico.model.EstadoEntrevista;
+import edu.reclutamiento.talentoacademico.model.EstadoPostulante;
 import edu.reclutamiento.talentoacademico.model.EstadoResultado;
 import edu.reclutamiento.talentoacademico.model.ResultadoEntrevista;
 import edu.reclutamiento.talentoacademico.service.ResultadoEntrevistaService;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class ResultadoEntrevistaController {
@@ -28,20 +31,33 @@ public class ResultadoEntrevistaController {
     }
 
     @GetMapping("/admin/resultados-entrevista/nuevo/{entrevistaId}")
-    public String nuevo(@PathVariable Long entrevistaId, Model model) {
-        ResultadoEntrevista resultado = resultadoService.preparar(entrevistaId);
-        if (resultado.getId() != null) {
-            return "redirect:/admin/resultados-entrevista/editar/" + resultado.getId();
+    public String nuevo(@PathVariable Long entrevistaId, Model model,
+                        RedirectAttributes redirectAttributes) {
+        try {
+            ResultadoEntrevista resultado = resultadoService.preparar(entrevistaId);
+            if (resultado.getId() != null) {
+                return "redirect:/admin/resultados-entrevista/editar/" + resultado.getId();
+            }
+            model.addAttribute("resultado", resultado);
+            return "admin/resultado-entrevista-form";
+        } catch (IllegalStateException | IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+            return "redirect:/admin/entrevistas";
         }
-        model.addAttribute("resultado", resultado);
-        return "admin/resultado-entrevista-form";
     }
 
     @GetMapping("/admin/resultados-entrevista/editar/{id}")
-    public String editar(@PathVariable Long id, Model model) {
+    public String editar(@PathVariable Long id, Model model,
+                         RedirectAttributes redirectAttributes) {
         ResultadoEntrevista resultado = resultadoService.buscar(id);
         if (resultado == null) {
             return "redirect:/admin/resultados-entrevista";
+        }
+        if (resultado.getEntrevista().getEstadoEntrevista() == EstadoEntrevista.CANCELADA
+                || resultado.getEntrevista().getPostulante().getEstado() == EstadoPostulante.CANCELADO) {
+            redirectAttributes.addFlashAttribute(
+                    "error", "No se puede editar el resultado de un proceso cancelado.");
+            return "redirect:/admin/entrevistas";
         }
         model.addAttribute("resultado", resultado);
         return "admin/resultado-entrevista-form";
@@ -55,7 +71,8 @@ public class ResultadoEntrevistaController {
                           @RequestParam(required = false) String observacion,
                           @RequestParam(required = false) String recomendacion,
                           HttpSession session,
-                          Model model) {
+                          Model model,
+                          RedirectAttributes redirectAttributes) {
         try {
             ResultadoEntrevista entidad;
             // En edicion se intenta conservar la entidad existente; si no aparece, se arma una nueva.
@@ -80,7 +97,10 @@ public class ResultadoEntrevistaController {
             String registradoPor = (String) session.getAttribute("nombre");
             resultadoService.guardar(entidad, registradoPor);
             return "redirect:/admin/resultados-entrevista";
-        } catch (IllegalStateException | IllegalArgumentException ex) {
+        } catch (IllegalStateException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+            return "redirect:/admin/entrevistas";
+        } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
             // Se repuebla el resultado con lo enviado para que el usuario no pierda los datos del formulario.
             model.addAttribute("resultado", recuperarResultadoConDatos(id, entrevistaId, resultado, puntaje, observacion, recomendacion));

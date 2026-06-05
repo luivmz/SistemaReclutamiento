@@ -9,6 +9,17 @@
     <%@ include file="../includes/admin-sidebar.jsp" %>
 <main class="admin-content">
     <h2 class="page-title">Entrevistas</h2>
+    <c:if test="${not empty postulantesSinEntrevistasProgramadas}">
+        <div class="card">
+            <strong>Advertencia:</strong>
+            <p>Los siguientes postulantes estan EN_ENTREVISTA, pero no tienen entrevistas PROGRAMADAS:</p>
+            <ul>
+                <c:forEach var="p" items="${postulantesSinEntrevistasProgramadas}">
+                    <li>${p.nombre} - ${p.ofertaTitulo}</li>
+                </c:forEach>
+            </ul>
+        </div>
+    </c:if>
     <form method="post" action="/admin/entrevistas" class="card">
         <input type="hidden" name="id" value="${entrevista.id}">
         <c:if test="${not empty error}"><p class="error">${error}</p></c:if>
@@ -37,11 +48,19 @@
         </select>
 
         <label>Estado de la entrevista</label>
-        <select name="estadoEntrevista">
-            <option value="PROGRAMADA" <c:if test="${entrevista.estadoEntrevista == 'PROGRAMADA'}">selected</c:if>>PROGRAMADA</option>
-            <option value="REALIZADA" <c:if test="${entrevista.estadoEntrevista == 'REALIZADA'}">selected</c:if>>REALIZADA</option>
-            <option value="CANCELADA" <c:if test="${entrevista.estadoEntrevista == 'CANCELADA'}">selected</c:if>>CANCELADA</option>
-        </select>
+        <c:choose>
+            <c:when test="${entrevista.id == null}">
+                <input type="hidden" name="estadoEntrevista" value="PROGRAMADA">
+                <p>PROGRAMADA</p>
+            </c:when>
+            <c:otherwise>
+                <select name="estadoEntrevista">
+                    <option value="PROGRAMADA" <c:if test="${entrevista.estadoEntrevista == 'PROGRAMADA'}">selected</c:if>>PROGRAMADA</option>
+                    <option value="REALIZADA" <c:if test="${entrevista.estadoEntrevista == 'REALIZADA'}">selected</c:if>>REALIZADA</option>
+                    <option value="CANCELADA" <c:if test="${entrevista.estadoEntrevista == 'CANCELADA'}">selected</c:if>>CANCELADA</option>
+                </select>
+            </c:otherwise>
+        </c:choose>
 
         <label>Observacion</label><textarea name="observacion" maxlength="700">${entrevista.observacion}</textarea>
         <button type="submit">Guardar</button>
@@ -69,14 +88,18 @@
                 <td>${e.estadoEntrevista}</td>
                 <td>${e.resultadoEntrevistaValor}</td>
                 <td>
-                    <a class="btn" href="/admin/entrevistas/editar/${e.id}">Editar</a>
+                    <c:if test="${e.postulanteEstado == 'POSTULADO' || e.postulanteEstado == 'EN_ENTREVISTA'}">
+                        <a class="btn" href="/admin/entrevistas/editar/${e.id}">Editar</a>
+                    </c:if>
                     <c:choose>
-                        <c:when test="${e.resultadoEntrevistaId == null}">
+                        <c:when test="${e.resultadoEntrevistaId == null
+                                && e.estadoEntrevista != 'CANCELADA'
+                                && (e.postulanteEstado == 'POSTULADO' || e.postulanteEstado == 'EN_ENTREVISTA')}">
                             <a class="btn" href="/admin/resultados-entrevista/nuevo/${e.id}">Registrar resultado</a>
                         </c:when>
-                        <c:otherwise>
+                        <c:when test="${e.resultadoEntrevistaId != null && e.postulanteEstado != 'CANCELADO'}">
                             <a class="btn" href="/admin/resultados-entrevista/editar/${e.resultadoEntrevistaId}">Editar resultado</a>
-                        </c:otherwise>
+                        </c:when>
                     </c:choose>
                     <a class="btn secundario" href="/admin/entrevistas/eliminar/${e.id}">Eliminar</a>
                 </td>

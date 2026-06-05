@@ -22,6 +22,9 @@ public class EntrevistaMapper {
             // Del postulante solo se envia id y nombre; no toda la entidad ni sus relaciones.
             dto.setPostulanteId(entrevista.getPostulante().getId());
             dto.setPostulanteNombre(entrevista.getPostulante().getNombre());
+            if (entrevista.getPostulante().getEstado() != null) {
+                dto.setPostulanteEstado(entrevista.getPostulante().getEstado().name());
+            }
         }
         if (entrevista.getResultadoEntrevista() != null) {
             // Del resultado solo se envia un resumen para evitar dependencias innecesarias en la vista.

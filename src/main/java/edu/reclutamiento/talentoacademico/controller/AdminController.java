@@ -1,6 +1,7 @@
 package edu.reclutamiento.talentoacademico.controller;
 
 import edu.reclutamiento.talentoacademico.dto.EntrevistaDTO;
+import edu.reclutamiento.talentoacademico.dto.PostulanteDTO;
 import edu.reclutamiento.talentoacademico.dto.UsuarioDTO;
 import edu.reclutamiento.talentoacademico.model.Area;
 import edu.reclutamiento.talentoacademico.model.EstadoEntrevista;
@@ -12,6 +13,7 @@ import edu.reclutamiento.talentoacademico.service.OfertaService;
 import edu.reclutamiento.talentoacademico.service.PostulanteService;
 import edu.reclutamiento.talentoacademico.service.UsuarioService;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -145,17 +147,13 @@ public class AdminController {
 
     @GetMapping("/admin/entrevistas")
     public String entrevistas(Model model) {
-        model.addAttribute("entrevistas", entrevistaService.listar());
-        model.addAttribute("postulantes", postulanteService.listarActivos());
-        model.addAttribute("entrevista", new EntrevistaDTO());
+        cargarDatosEntrevistas(model, new EntrevistaDTO());
         return "admin/entrevistas";
     }
 
     @GetMapping("/admin/entrevistas/editar/{id}")
     public String editarEntrevista(@PathVariable Long id, Model model) {
-        model.addAttribute("entrevistas", entrevistaService.listar());
-        model.addAttribute("postulantes", postulanteService.listarActivos());
-        model.addAttribute("entrevista", entrevistaService.buscar(id));
+        cargarDatosEntrevistas(model, entrevistaService.buscar(id));
         return "admin/entrevistas";
     }
 
@@ -167,9 +165,7 @@ public class AdminController {
         } catch (IllegalStateException | IllegalArgumentException ex) {
             // La vista de entrevistas combina tabla y formulario; por eso se reconstruye todo el modelo al fallar.
             model.addAttribute("error", ex.getMessage());
-            model.addAttribute("entrevistas", entrevistaService.listar());
-            model.addAttribute("postulantes", postulanteService.listarActivos());
-            model.addAttribute("entrevista", entrevista);
+            cargarDatosEntrevistas(model, entrevista);
             return "admin/entrevistas";
         }
     }
@@ -184,6 +180,19 @@ public class AdminController {
     public String historial(Model model) {
         model.addAttribute("historial", historialPostulanteService.listar());
         return "admin/historial";
+    }
+
+    private void cargarDatosEntrevistas(Model model, EntrevistaDTO entrevista) {
+        List<PostulanteDTO> postulantesActivos = postulanteService.listarActivos();
+        model.addAttribute("entrevistas", entrevistaService.listar());
+        model.addAttribute("postulantes", postulantesActivos);
+        model.addAttribute("entrevista", entrevista);
+
+        // Se advierte al administrador cuando un proceso en entrevista ya no tiene citas programadas.
+        model.addAttribute("postulantesSinEntrevistasProgramadas", postulantesActivos.stream()
+                .filter(postulante -> "EN_ENTREVISTA".equals(postulante.getEstado()))
+                .filter(postulante -> !entrevistaService.tieneEntrevistasProgramadas(postulante.getId()))
+                .toList());
     }
 
     private String usuarioActual(HttpSession session) {

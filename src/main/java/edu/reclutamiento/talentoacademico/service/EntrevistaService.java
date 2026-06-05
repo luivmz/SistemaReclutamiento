@@ -9,6 +9,8 @@ public interface EntrevistaService {
     List<EntrevistaDTO> listarPorPostulante(Long postulanteId);
     EntrevistaDTO buscar(Long id);
     EntrevistaDTO guardar(EntrevistaDTO dto, String registradoPor);
+    Long cancelarEntrevista(Long entrevistaId, Long usuarioId);
+    boolean tieneEntrevistasProgramadas(Long postulanteId);
     long contarPorEstado(EstadoEntrevista estado);
     void eliminar(Long id);
 }

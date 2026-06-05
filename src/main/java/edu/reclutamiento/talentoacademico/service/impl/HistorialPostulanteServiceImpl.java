@@ -31,7 +31,21 @@ public class HistorialPostulanteServiceImpl implements HistorialPostulanteServic
             return;
         }
 
-        // Este save participa en la transaccion del servicio que realizo el cambio de estado.
+        guardarHistorial(postulante, estadoAnterior, estadoNuevo, observacion, usuarioActual);
+    }
+
+    public void registrarEvento(Postulante postulante, String observacion, String usuarioActual) {
+        if (postulante == null) {
+            return;
+        }
+
+        // Una entrevista cancelada se registra como evento aunque el estado del postulante no cambie.
+        guardarHistorial(postulante, postulante.getEstado(), postulante.getEstado(), observacion, usuarioActual);
+    }
+
+    private void guardarHistorial(Postulante postulante, EstadoPostulante estadoAnterior,
+                                  EstadoPostulante estadoNuevo, String observacion, String usuarioActual) {
+        // Este save participa en la transaccion del servicio que realizo el cambio o evento.
         HistorialPostulante historial = new HistorialPostulante();
         historial.setPostulante(postulante);
         historial.setEstadoAnterior(estadoAnterior);

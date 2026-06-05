@@ -52,17 +52,37 @@ public class EntrevistaServiceImpl implements EntrevistaService {
             throw new IllegalArgumentException("No se puede programar una entrevista con fecha pasada.");
         }
 
-        // Se convierte el DTO y luego se reemplaza el postulante por la entidad real de la BD.
-        Entrevista entrevista = EntrevistaMapper.toEntity(dto);
-        Postulante postulante = null;
-        if (dto.getPostulanteId() != null) {
-            postulante = postulanteRepository.findById(dto.getPostulanteId()).orElse(null);
-            entrevista.setPostulante(postulante);
-        }
+        Entrevista datosFormulario = EntrevistaMapper.toEntity(dto);
+        Entrevista entrevista;
+        Postulante postulante;
 
-        // Al crear una entrevista, el postulante debe seguir en un estado activo del proceso.
-        if (postulante != null && esNueva) {
+        if (esNueva) {
+            postulante = postulanteRepository.findById(dto.getPostulanteId())
+                    .orElseThrow(() -> new IllegalArgumentException("Postulante no encontrado."));
             validarPostulanteActivo(postulante);
+            entrevista = datosFormulario;
+            entrevista.setPostulante(postulante);
+            // Toda entrevista nueva inicia PROGRAMADA; REALIZADA y CANCELADA son estados posteriores.
+            entrevista.setEstadoEntrevista(EstadoEntrevista.PROGRAMADA);
+        } else {
+            entrevista = entrevistaRepository.findById(dto.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Entrevista no encontrada."));
+            postulante = entrevista.getPostulante();
+            validarPostulanteActivo(postulante);
+
+            // Al editar se conserva el postulante original para evitar reasignaciones accidentales.
+            entrevista.setTipoEntrevista(datosFormulario.getTipoEntrevista());
+            entrevista.setFecha(datosFormulario.getFecha());
+            entrevista.setHora(datosFormulario.getHora());
+            entrevista.setLugar(datosFormulario.getLugar());
+            entrevista.setModalidad(datosFormulario.getModalidad());
+            entrevista.setObservacion(datosFormulario.getObservacion());
+
+            if (entrevista.getResultadoEntrevista() != null
+                    && datosFormulario.getEstadoEntrevista() != EstadoEntrevista.REALIZADA) {
+                throw new IllegalStateException("Una entrevista con resultado debe permanecer REALIZADA.");
+            }
+            entrevista.setEstadoEntrevista(datosFormulario.getEstadoEntrevista());
         }
 
         Entrevista guardada = entrevistaRepository.save(entrevista);
@@ -73,6 +93,48 @@ public class EntrevistaServiceImpl implements EntrevistaService {
         }
 
         return EntrevistaMapper.toDTO(guardada);
+    }
+
+    // El postulante puede cancelar una entrevista programada,
+    // pero esto no implica cancelar toda la postulacion.
+    // @Transactional une la actualizacion de la entrevista con el registro del historial.
+    @Transactional
+    public Long cancelarEntrevista(Long entrevistaId, Long usuarioId) {
+        Entrevista entrevista = entrevistaRepository.findById(entrevistaId)
+                .orElseThrow(() -> new IllegalArgumentException("Entrevista no encontrada."));
+        Postulante postulante = entrevista.getPostulante();
+
+        if (postulante == null || postulante.getUsuario() == null
+                || !postulante.getUsuario().getId().equals(usuarioId)) {
+            throw new SecurityException("No puedes cancelar una entrevista que no te pertenece.");
+        }
+        if (postulante.getEstado() == EstadoPostulante.CANCELADO) {
+            throw new IllegalStateException("La postulacion ya se encuentra cancelada.");
+        }
+        if (entrevista.getEstadoEntrevista() != EstadoEntrevista.PROGRAMADA) {
+            throw new IllegalStateException("Solo se pueden cancelar entrevistas programadas.");
+        }
+        if (entrevista.getResultadoEntrevista() != null) {
+            throw new IllegalStateException("No se puede cancelar una entrevista que ya tiene resultado.");
+        }
+
+        entrevista.setEstadoEntrevista(EstadoEntrevista.CANCELADA);
+        entrevista.setObservacion("Entrevista cancelada por el postulante.");
+        entrevistaRepository.save(entrevista);
+
+        String tipo = entrevista.getTipoEntrevista() == null
+                ? "Entrevista"
+                : "Entrevista " + entrevista.getTipoEntrevista().name().toLowerCase();
+        // Se registra historial para mantener trazabilidad sin cambiar el estado del postulante.
+        historialPostulanteService.registrarEvento(
+                postulante, tipo + " cancelada por el postulante.", postulante.getNombre());
+
+        return postulante.getId();
+    }
+
+    public boolean tieneEntrevistasProgramadas(Long postulanteId) {
+        return entrevistaRepository.existsByPostulanteIdAndEstadoEntrevista(
+                postulanteId, EstadoEntrevista.PROGRAMADA);
     }
 
     public void eliminar(Long id) {

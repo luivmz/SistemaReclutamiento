@@ -55,6 +55,7 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         // Si aun no existe resultado, se arma un objeto temporal para precargar el formulario.
         Entrevista entrevista = entrevistaRepository.findById(entrevistaId)
                 .orElseThrow(() -> new IllegalArgumentException("Entrevista no encontrada."));
+        validarEntrevistaDisponibleParaResultado(entrevista, true);
         ResultadoEntrevista nuevo = new ResultadoEntrevista();
         nuevo.setEntrevista(entrevista);
         nuevo.setResultado(EstadoResultado.PENDIENTE);
@@ -78,6 +79,7 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         // Solo se impide duplicar cuando se esta creando un resultado nuevo.
         // Al editar, el mismo registro puede volver a guardarse.
         boolean esNuevo = resultado.getId() == null;
+        validarEntrevistaDisponibleParaResultado(entrevista, esNuevo);
         if (esNuevo && resultadoRepository.existsByEntrevistaId(entrevista.getId())) {
             throw new IllegalStateException("La entrevista ya tiene un resultado registrado.");
         }
@@ -132,6 +134,25 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
     private void actualizarEstadoEntrevista(Entrevista entrevista) {
         entrevista.setEstadoEntrevista(EstadoEntrevista.REALIZADA);
         entrevistaRepository.save(entrevista);
+    }
+
+    private void validarEntrevistaDisponibleParaResultado(Entrevista entrevista, boolean esNuevo) {
+        // Las entrevistas canceladas no pueden recibir resultados.
+        if (entrevista.getEstadoEntrevista() == EstadoEntrevista.CANCELADA) {
+            throw new IllegalStateException("No se puede registrar resultado en una entrevista cancelada.");
+        }
+
+        Postulante postulante = entrevista.getPostulante();
+        if (postulante == null) {
+            throw new IllegalStateException("La entrevista no tiene un postulante asociado.");
+        }
+        if (postulante.getEstado() == EstadoPostulante.CANCELADO) {
+            throw new IllegalStateException("No se puede evaluar una postulacion cancelada.");
+        }
+        if (esNuevo && (postulante.getEstado() == EstadoPostulante.APROBADO
+                || postulante.getEstado() == EstadoPostulante.RECHAZADO)) {
+            throw new IllegalStateException("La postulacion ya tiene un estado final.");
+        }
     }
 
     private void actualizarEstadoPostulante(Postulante postulante, EstadoResultado resultado, String registradoPor) {

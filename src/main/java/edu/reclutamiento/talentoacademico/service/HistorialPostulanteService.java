@@ -10,4 +10,5 @@ public interface HistorialPostulanteService {
     List<HistorialPostulante> listarPorPostulante(Long postulanteId);
     void registrarCambioEstado(Postulante postulante, EstadoPostulante estadoAnterior,
                                 EstadoPostulante estadoNuevo, String observacion, String usuarioActual);
+    void registrarEvento(Postulante postulante, String observacion, String usuarioActual);
 }

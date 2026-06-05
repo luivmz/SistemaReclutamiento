@@ -14,6 +14,7 @@ public class EntrevistaDTO {
     private String estadoEntrevista;
     private Long postulanteId;
     private String postulanteNombre;
+    private String postulanteEstado;
     private Long resultadoEntrevistaId;
     private String resultadoEntrevistaValor;
 
@@ -37,6 +38,8 @@ public class EntrevistaDTO {
     public void setPostulanteId(Long postulanteId) { this.postulanteId = postulanteId; }
     public String getPostulanteNombre() { return postulanteNombre; }
     public void setPostulanteNombre(String postulanteNombre) { this.postulanteNombre = postulanteNombre; }
+    public String getPostulanteEstado() { return postulanteEstado; }
+    public void setPostulanteEstado(String postulanteEstado) { this.postulanteEstado = postulanteEstado; }
     public Long getResultadoEntrevistaId() { return resultadoEntrevistaId; }
     public void setResultadoEntrevistaId(Long resultadoEntrevistaId) { this.resultadoEntrevistaId = resultadoEntrevistaId; }
     public String getResultadoEntrevistaValor() { return resultadoEntrevistaValor; }
