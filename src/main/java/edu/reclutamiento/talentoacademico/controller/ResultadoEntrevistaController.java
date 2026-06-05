@@ -58,6 +58,7 @@ public class ResultadoEntrevistaController {
                           Model model) {
         try {
             ResultadoEntrevista entidad;
+            // En edicion se intenta conservar la entidad existente; si no aparece, se arma una nueva.
             if (id != null) {
                 entidad = resultadoService.buscar(id);
                 if (entidad == null) {
@@ -66,6 +67,8 @@ public class ResultadoEntrevistaController {
             } else {
                 entidad = new ResultadoEntrevista();
             }
+
+            // Solo se necesita el id para que el servicio busque la entrevista real y valide su existencia.
             Entrevista entrevista = new Entrevista();
             entrevista.setId(entrevistaId);
             entidad.setEntrevista(entrevista);
@@ -79,6 +82,7 @@ public class ResultadoEntrevistaController {
             return "redirect:/admin/resultados-entrevista";
         } catch (IllegalStateException | IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
+            // Se repuebla el resultado con lo enviado para que el usuario no pierda los datos del formulario.
             model.addAttribute("resultado", recuperarResultadoConDatos(id, entrevistaId, resultado, puntaje, observacion, recomendacion));
             return "admin/resultado-entrevista-form";
         }
@@ -95,6 +99,7 @@ public class ResultadoEntrevistaController {
         ResultadoEntrevista r = new ResultadoEntrevista();
         r.setId(id);
         if (entrevistaId != null) {
+            // preparar trae la entrevista asociada aunque el resultado aun no haya sido guardado.
             ResultadoEntrevista existente = resultadoService.preparar(entrevistaId);
             r.setEntrevista(existente.getEntrevista());
         }
@@ -102,6 +107,7 @@ public class ResultadoEntrevistaController {
             try {
                 r.setResultado(EstadoResultado.valueOf(resultado));
             } catch (IllegalArgumentException ex) {
+                // Si llega un valor invalido desde el request, la vista vuelve a un estado seguro.
                 r.setResultado(EstadoResultado.PENDIENTE);
             }
         }

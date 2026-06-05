@@ -17,9 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-// @Transactional protege el registro del resultado: se guarda el resultado,
-// se actualiza la entrevista, se cambia el postulante y se registra historial como una sola operacion.
-@Transactional
 public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaService {
 
     private final ResultadoEntrevistaRepository resultadoRepository;
@@ -37,18 +34,14 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         this.historialPostulanteService = historialPostulanteService;
     }
 
-    // readOnly indica que este listado no debe cambiar resultados ni estados.
-    @Transactional(readOnly = true)
     public List<ResultadoEntrevista> listar() {
         return resultadoRepository.findAll();
     }
 
-    @Transactional(readOnly = true)
     public ResultadoEntrevista buscar(Long id) {
         return resultadoRepository.findById(id).orElse(null);
     }
 
-    @Transactional(readOnly = true)
     public ResultadoEntrevista buscarPorEntrevista(Long entrevistaId) {
         return resultadoRepository.findByEntrevistaId(entrevistaId).orElse(null);
     }
@@ -58,6 +51,8 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         if (existente != null) {
             return existente;
         }
+
+        // Si aun no existe resultado, se arma un objeto temporal para precargar el formulario.
         Entrevista entrevista = entrevistaRepository.findById(entrevistaId)
                 .orElseThrow(() -> new IllegalArgumentException("Entrevista no encontrada."));
         ResultadoEntrevista nuevo = new ResultadoEntrevista();
@@ -67,6 +62,9 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         return nuevo;
     }
 
+    // Guarda el resultado y actualiza entrevista, postulante e historial en una sola transaccion.
+    // Si falla alguna actualizacion, Spring revierte todo para evitar datos inconsistentes.
+    @Transactional
     public ResultadoEntrevista guardar(ResultadoEntrevista resultado, String registradoPor) {
         validar(resultado);
         if (resultado.getEntrevista() == null || resultado.getEntrevista().getId() == null) {
@@ -77,11 +75,14 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
                 .orElseThrow(() -> new IllegalArgumentException("Entrevista no encontrada."));
         resultado.setEntrevista(entrevista);
 
+        // Solo se impide duplicar cuando se esta creando un resultado nuevo.
+        // Al editar, el mismo registro puede volver a guardarse.
         boolean esNuevo = resultado.getId() == null;
         if (esNuevo && resultadoRepository.existsByEntrevistaId(entrevista.getId())) {
             throw new IllegalStateException("La entrevista ya tiene un resultado registrado.");
         }
 
+        // Valores por defecto para que el formulario pueda guardar resultados incompletos como pendientes.
         if (resultado.getResultado() == null) {
             resultado.setResultado(EstadoResultado.PENDIENTE);
         }
@@ -101,6 +102,8 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         return guardado;
     }
 
+    // Elimina el resultado y restablece los estados relacionados dentro de la misma transaccion.
+    @Transactional
     public void eliminar(Long id) {
         ResultadoEntrevista existente = resultadoRepository.findById(id).orElse(null);
         if (existente == null) {
@@ -110,11 +113,13 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         resultadoRepository.delete(existente);
 
         if (entrevista != null) {
+            // Al eliminar el resultado, la entrevista vuelve a quedar pendiente de ejecucion.
             entrevista.setEstadoEntrevista(EstadoEntrevista.PROGRAMADA);
             entrevistaRepository.save(entrevista);
 
             Postulante postulante = entrevista.getPostulante();
-        if (postulante != null
+            // Solo se devuelve a EN_ENTREVISTA si el postulante no habia llegado ya a un estado final.
+            if (postulante != null
                     && postulante.getEstado() != EstadoPostulante.APROBADO
                     && postulante.getEstado() != EstadoPostulante.RECHAZADO
                     && postulante.getEstado() != EstadoPostulante.CANCELADO) {
@@ -135,6 +140,8 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         }
         EstadoPostulante estadoAnterior = postulante.getEstado();
         String observacionHistorial = null;
+
+        // El resultado de la entrevista decide si el proceso termina o continua en evaluacion.
         if (resultado == EstadoResultado.APROBADO) {
             postulante.setEstado(EstadoPostulante.APROBADO);
             postulante.setAprobado(true);
@@ -166,6 +173,7 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         if (resultado.getPuntaje() != null && resultado.getPuntaje() > 100) {
             throw new IllegalArgumentException("El puntaje no debe superar 100.");
         }
+        // Los resultados finales requieren sustento; los pendientes pueden guardarse sin observacion.
         if (resultado.getResultado() != EstadoResultado.PENDIENTE) {
             ValidationUtils.validarTextoObligatorio(resultado.getObservacion(), "La observacion del resultado", 700);
         } else {

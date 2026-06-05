@@ -13,6 +13,12 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(authInterceptor);
+        // El interceptor solo revisa rutas privadas y la accion publica que requiere autenticacion.
+        registry.addInterceptor(authInterceptor)
+                .addPathPatterns(
+                        "/admin/**",
+                        "/postulante/**",
+                        "/ofertas/*/postular"
+                );
     }
 }

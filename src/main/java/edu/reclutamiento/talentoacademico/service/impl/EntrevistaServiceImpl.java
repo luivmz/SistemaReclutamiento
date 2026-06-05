@@ -16,9 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-// @Transactional evita que una entrevista quede guardada sin actualizar
-// el estado del postulante o sin registrar el movimiento en historial.
-@Transactional
 public class EntrevistaServiceImpl implements EntrevistaService {
     private final EntrevistaRepository entrevistaRepository;
     private final PostulanteRepository postulanteRepository;
@@ -31,29 +28,31 @@ public class EntrevistaServiceImpl implements EntrevistaService {
         this.historialPostulanteService = historialPostulanteService;
     }
 
-    // readOnly indica que este metodo solo consulta entrevistas y no modifica la BD.
-    @Transactional(readOnly = true)
     public List<EntrevistaDTO> listar() {
+        // Convertimos cada entidad del listado en un DTO mediante una referencia funcional.
         return entrevistaRepository.findAll().stream().map(EntrevistaMapper::toDTO).toList();
     }
 
-    // readOnly evita sincronizaciones innecesarias cuando solo filtramos entrevistas por postulante.
-    @Transactional(readOnly = true)
     public List<EntrevistaDTO> listarPorPostulante(Long postulanteId) {
         return entrevistaRepository.findByPostulanteId(postulanteId).stream().map(EntrevistaMapper::toDTO).toList();
     }
 
-    @Transactional(readOnly = true)
     public EntrevistaDTO buscar(Long id) {
         return entrevistaRepository.findById(id).map(EntrevistaMapper::toDTO).orElse(new EntrevistaDTO());
     }
 
+    // Guarda la entrevista, actualiza al postulante y registra el historial como una sola operacion.
+    // Si una parte falla, Spring revierte todos los cambios relacionados.
+    @Transactional
     public EntrevistaDTO guardar(EntrevistaDTO dto, String registradoPor) {
         validar(dto);
         boolean esNueva = dto.getId() == null;
+        // La restriccion de fecha pasada aplica solo al crear; una edicion puede mantener una entrevista antigua.
         if (esNueva && dto.getFecha().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("No se puede programar una entrevista con fecha pasada.");
         }
+
+        // Se convierte el DTO y luego se reemplaza el postulante por la entidad real de la BD.
         Entrevista entrevista = EntrevistaMapper.toEntity(dto);
         Postulante postulante = null;
         if (dto.getPostulanteId() != null) {
@@ -61,12 +60,14 @@ public class EntrevistaServiceImpl implements EntrevistaService {
             entrevista.setPostulante(postulante);
         }
 
+        // Al crear una entrevista, el postulante debe seguir en un estado activo del proceso.
         if (postulante != null && esNueva) {
             validarPostulanteActivo(postulante);
         }
 
         Entrevista guardada = entrevistaRepository.save(entrevista);
 
+        // Solo la primera programacion mueve al postulante a EN_ENTREVISTA y registra historial.
         if (postulante != null && esNueva) {
             marcarPostulanteEnEntrevista(postulante, registradoPor);
         }
@@ -78,7 +79,6 @@ public class EntrevistaServiceImpl implements EntrevistaService {
         entrevistaRepository.deleteById(id);
     }
 
-    @Transactional(readOnly = true)
     public long contarPorEstado(EstadoEntrevista estado) {
         return entrevistaRepository.countByEstadoEntrevista(estado);
     }

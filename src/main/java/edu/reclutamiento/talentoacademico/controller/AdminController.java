@@ -52,6 +52,7 @@ public class AdminController {
     }
 
     private void cargarMetricas(Model model) {
+        // Centraliza los contadores para que dashboard y /admin/metricas muestren los mismos datos.
         model.addAttribute("usuarios", usuarioService.listar().size());
         model.addAttribute("ofertas", ofertaService.listar().size());
         model.addAttribute("ofertasActivas", ofertaService.listarActivas().size());
@@ -164,6 +165,7 @@ public class AdminController {
             entrevistaService.guardar(entrevista, usuarioActual(session));
             return "redirect:/admin/entrevistas";
         } catch (IllegalStateException | IllegalArgumentException ex) {
+            // La vista de entrevistas combina tabla y formulario; por eso se reconstruye todo el modelo al fallar.
             model.addAttribute("error", ex.getMessage());
             model.addAttribute("entrevistas", entrevistaService.listar());
             model.addAttribute("postulantes", postulanteService.listarActivos());

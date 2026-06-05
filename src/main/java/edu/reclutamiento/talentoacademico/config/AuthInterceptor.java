@@ -8,32 +8,33 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
-    // Este interceptor funciona como una seguridad basica del sistema.
-    // Se ejecuta antes del controller para revisar si la sesion y el rol permiten entrar a la ruta.
+    // Se ejecuta antes del controller y funciona como seguridad basica del sistema.
+    // Valida que exista una sesion y que el usuario tenga el rol permitido para la ruta.
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String path = request.getRequestURI();
         HttpSession session = request.getSession(false);
+        // getSession(false) evita crear una sesion nueva solo para comprobar si el usuario inicio sesion.
         String rol = session == null ? null : (String) session.getAttribute("rol");
 
-        // Si la ruta empieza con /admin, solo un usuario con rol ADMIN puede ingresar.
+        // Las rutas /admin/** solo pueden ser usadas por usuarios con rol ADMIN.
         if (path.startsWith("/admin") && !"ADMIN".equals(rol)) {
             response.sendRedirect("/login");
             return false;
         }
 
-        // Si la ruta empieza con /postulante, solo un usuario con rol POSTULANTE puede ingresar.
+        // Las rutas /postulante/** solo pueden ser usadas por usuarios con rol POSTULANTE.
         if (path.startsWith("/postulante") && !"POSTULANTE".equals(rol)) {
             response.sendRedirect("/login");
             return false;
         }
 
-        // Para postular a una oferta se exige sesion activa.
+        // Para postular a una oferta debe existir una sesion con un rol registrado.
         if (path.matches("/ofertas/\\d+/postular") && rol == null) {
             response.sendRedirect("/login?mensaje=Debes%20iniciar%20sesion%20o%20crear%20una%20cuenta%20para%20postular.");
             return false;
         }
 
-        // Un administrador puede gestionar ofertas, pero no postular como candidato.
+        // Aunque tenga sesion, solo el rol POSTULANTE puede enviar una postulacion.
         if (path.matches("/ofertas/\\d+/postular") && !"POSTULANTE".equals(rol)) {
             response.sendRedirect("/acceso-denegado");
             return false;

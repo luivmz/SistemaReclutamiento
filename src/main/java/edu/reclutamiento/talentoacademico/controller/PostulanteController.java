@@ -29,10 +29,7 @@ public class PostulanteController {
     }
 
     @GetMapping("/ofertas/{id}/postular")
-    public String formularioPostulacion(@PathVariable Long id, Model model, HttpSession session) {
-        if ("ADMIN".equals(session.getAttribute("rol"))) {
-            return "redirect:/acceso-denegado";
-        }
+    public String formularioPostulacion(@PathVariable Long id, Model model) {
         var oferta = ofertaService.buscarActiva(id);
         if (oferta == null) {
             return "redirect:/ofertas";
@@ -46,10 +43,8 @@ public class PostulanteController {
     public String postular(@PathVariable Long id, @ModelAttribute PostulanteDTO postulante,
                            HttpSession session, Model model) {
         Long usuarioId = (Long) session.getAttribute("usuarioId");
-        if ("ADMIN".equals(session.getAttribute("rol"))) {
-            return "redirect:/acceso-denegado";
-        }
         try {
+            // La validacion se repite aqui para devolver el formulario con un mensaje claro antes de llamar al servicio.
             if (postulanteService.yaPostulo(usuarioId, id)) {
                 model.addAttribute("oferta", ofertaService.buscarActiva(id));
                 model.addAttribute("error", "Ya postulaste a esta oferta.");
@@ -60,6 +55,7 @@ public class PostulanteController {
             postulanteService.postular(postulante, usuarioId);
             return "redirect:/postulante/mis-postulaciones";
         } catch (IllegalArgumentException | IllegalStateException ex) {
+            // Ante errores de validacion se reconstruye el modelo que necesita la misma vista JSP.
             model.addAttribute("oferta", ofertaService.buscarActiva(id));
             model.addAttribute("error", ex.getMessage());
             model.addAttribute("postulante", postulante);
@@ -93,6 +89,7 @@ public class PostulanteController {
             postulanteService.cancelar(id, usuarioId);
             return "redirect:/postulante/mis-postulaciones";
         } catch (IllegalStateException ex) {
+            // Si no pudo cancelar, se vuelve a la pantalla de estado manteniendo sus entrevistas cargadas.
             PostulanteDTO postulacion = postulanteService.buscar(id);
             if (postulacion == null || !usuarioId.equals(postulacion.getUsuarioId())) {
                 return "redirect:/acceso-denegado";
@@ -134,6 +131,7 @@ public class PostulanteController {
     @PostMapping("/admin/postulantes")
     public String registrarPostulanteAdmin(@ModelAttribute PostulanteDTO postulante, HttpSession session, Model model) {
         try {
+            // El mismo formulario sirve para crear una postulacion administrativa o actualizar una existente.
             if (postulante.getId() == null) {
                 postulanteService.postular(postulante, postulante.getUsuarioId());
             } else {
@@ -141,6 +139,7 @@ public class PostulanteController {
             }
             return "redirect:/admin/postulantes";
         } catch (IllegalStateException | IllegalArgumentException ex) {
+            // Cuando falla, se recargan todas las listas porque la JSP muestra formulario, activos e historial juntos.
             model.addAttribute("error", ex.getMessage());
             model.addAttribute("activos", postulanteService.listarActivos());
             model.addAttribute("historial", postulanteService.listarHistorial());

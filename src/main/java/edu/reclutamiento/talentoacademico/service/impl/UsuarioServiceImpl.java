@@ -19,10 +19,12 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     public List<UsuarioDTO> listar() {
+        // La referencia UsuarioMapper::toDTO convierte cada usuario del stream en un DTO.
         return usuarioRepository.findAll().stream().map(UsuarioMapper::toDTO).toList();
     }
 
     public List<UsuarioDTO> listarPostulantes() {
+        // La consulta trae solo usuarios POSTULANTE activos y el stream los prepara para la vista.
         return usuarioRepository.findByRolAndActivoTrue(RolUsuario.POSTULANTE).stream().map(UsuarioMapper::toDTO).toList();
     }
 

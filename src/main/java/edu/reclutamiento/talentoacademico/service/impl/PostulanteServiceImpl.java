@@ -16,9 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-// @Transactional mantiene unidas las operaciones de postulacion, cambio de estado
-// e historial. Si una parte falla, Spring revierte los cambios para evitar datos incompletos.
-@Transactional
 public class PostulanteServiceImpl implements PostulanteService {
     private final PostulanteRepository postulanteRepository;
     private final OfertaRepository ofertaRepository;
@@ -35,6 +32,7 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
     public List<PostulanteDTO> listar() {
+        // map usa la referencia PostulanteMapper::toDTO para convertir cada entidad en un DTO.
         return postulanteRepository.findAll().stream().map(PostulanteMapper::toDTO).toList();
     }
 
@@ -47,6 +45,7 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
     public List<PostulanteDTO> listarHistorial() {
+        // Estos enums representan estados finales y se muestran en la seccion de historial.
         return postulanteRepository.findByEstadoIn(List.of(
                 EstadoPostulante.APROBADO,
                 EstadoPostulante.RECHAZADO,
@@ -68,14 +67,19 @@ public class PostulanteServiceImpl implements PostulanteService {
 
     public PostulanteDTO postular(PostulanteDTO dto, Long usuarioId) {
         validarPostulacion(dto);
+        // Evita duplicar postulaciones del mismo usuario a la misma oferta antes de crear la entidad.
         if (dto.getOfertaId() != null && yaPostulo(usuarioId, dto.getOfertaId())) {
             throw new IllegalStateException("Ya postulaste a esta oferta.");
         }
+
+        // La postulacion siempre nace como registro nuevo y en estado POSTULADO.
         dto.setId(null);
         Postulante postulante = PostulanteMapper.toEntity(dto);
         postulante.setEstado(EstadoPostulante.POSTULADO);
         postulante.setAprobado(false);
         asignarOferta(dto, postulante);
+
+        // Los datos principales vienen del usuario autenticado para evitar que se postule con otra identidad.
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
         postulante.setUsuario(usuario);
         postulante.setNombre(usuario.getNombre());
@@ -86,10 +90,15 @@ public class PostulanteServiceImpl implements PostulanteService {
         return PostulanteMapper.toDTO(postulanteRepository.save(postulante));
     }
 
+    // Actualiza el postulante y registra su cambio de estado como una sola operacion.
+    // Si falla el historial, Spring revierte tambien la actualizacion.
+    @Transactional
     public PostulanteDTO actualizar(PostulanteDTO dto, String registradoPor) {
         validarPostulacion(dto);
         Postulante postulante = postulanteRepository.findById(dto.getId()).orElseThrow();
         EstadoPostulante estadoAnterior = postulante.getEstado();
+
+        // Se actualizan los datos editables desde el formulario de administracion.
         postulante.setNombre(dto.getNombre());
         postulante.setEmail(dto.getEmail());
         postulante.setTelefono(dto.getTelefono());
@@ -102,28 +111,39 @@ public class PostulanteServiceImpl implements PostulanteService {
         }
         asignarOferta(dto, postulante);
         Postulante guardado = postulanteRepository.save(postulante);
+        // Si el estado no cambio, el servicio de historial no registra nada.
         historialPostulanteService.registrarCambioEstado(
                 guardado, estadoAnterior, guardado.getEstado(), dto.getObservacion(), registradoPor);
         return PostulanteMapper.toDTO(guardado);
     }
 
+    // El cambio de estado y su historial deben confirmarse o revertirse juntos.
+    @Transactional
     public void aprobar(Long id, String registradoPor) {
         cambiarEstadoInterno(id, EstadoPostulante.APROBADO, true, "Postulante aprobado.", registradoPor);
     }
 
+    // Rechaza al postulante y registra el mismo cambio en historial.
+    @Transactional
     public void rechazar(Long id, String registradoPor) {
         cambiarEstadoInterno(id, EstadoPostulante.RECHAZADO, false, "Postulante rechazado.", registradoPor);
     }
 
+    // Actualiza el estado a EN_ENTREVISTA y conserva la trazabilidad del movimiento.
+    @Transactional
     public void marcarEnEntrevista(Long id, String registradoPor) {
         cambiarEstadoInterno(id, EstadoPostulante.EN_ENTREVISTA, false, null, registradoPor);
     }
 
+    // Cancela la postulacion y registra el movimiento en historial dentro de la misma transaccion.
+    @Transactional
     public void cancelar(Long id, Long usuarioId) {
         Postulante postulante = postulanteRepository.findById(id).orElseThrow();
+        // Un postulante solo puede cancelar registros asociados a su propia cuenta.
         if (postulante.getUsuario() == null || !postulante.getUsuario().getId().equals(usuarioId)) {
             throw new IllegalStateException("No puedes cancelar una postulacion que no te pertenece.");
         }
+        // Los estados finales ya forman parte del historial y no deben volver a cambiarse desde la vista publica.
         if (postulante.getEstado() != EstadoPostulante.POSTULADO
                 && postulante.getEstado() != EstadoPostulante.EN_ENTREVISTA) {
             throw new IllegalStateException("Solo se pueden cancelar postulaciones activas.");
@@ -153,23 +173,28 @@ public class PostulanteServiceImpl implements PostulanteService {
     }
 
     public long contarPorUsuarioYEstado(Long usuarioId, String estado) {
+        // valueOf convierte el texto recibido en el enum usado por la consulta del repositorio.
         return postulanteRepository.countByUsuarioIdAndEstado(usuarioId, EstadoPostulante.valueOf(estado));
     }
 
+    // Esta sobrecarga recibe el estado como texto y mantiene unido el cambio con su historial.
+    @Transactional
     public void cambiarEstado(Long id, String estado, String registradoPor) {
         cambiarEstado(id, EstadoPostulante.valueOf(estado), registradoPor);
     }
 
+    // Esta sobrecarga permite recibir directamente el enum sin perder la transaccion.
+    @Transactional
     public void cambiarEstado(Long id, EstadoPostulante estado, String registradoPor) {
         cambiarEstadoInterno(id, estado, estado == EstadoPostulante.APROBADO, null, registradoPor);
     }
 
-    // @Transactional asegura que el estado del postulante y su historial se guarden juntos.
-    // Si falla el historial, tambien se revierte el cambio de estado.
     private void cambiarEstadoInterno(Long id, EstadoPostulante estado, boolean aprobado, String observacion,
                                       String registradoPor) {
         Postulante postulante = postulanteRepository.findById(id).orElseThrow();
         EstadoPostulante estadoAnterior = postulante.getEstado();
+
+        // Centraliza las transiciones hechas por acciones rapidas: aprobar, rechazar o mover de estado.
         postulante.setEstado(estado);
         postulante.setAprobado(aprobado);
         if (observacion != null) {

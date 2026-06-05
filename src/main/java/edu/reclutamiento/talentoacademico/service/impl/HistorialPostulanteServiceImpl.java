@@ -8,12 +8,8 @@ import edu.reclutamiento.talentoacademico.service.HistorialPostulanteService;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-// @Transactional asegura que cada movimiento de historial se guarde de forma consistente
-// cuando un servicio cambia el estado de un postulante.
-@Transactional
 public class HistorialPostulanteServiceImpl implements HistorialPostulanteService {
     private final HistorialPostulanteRepository historialRepository;
 
@@ -21,13 +17,10 @@ public class HistorialPostulanteServiceImpl implements HistorialPostulanteServic
         this.historialRepository = historialRepository;
     }
 
-    // readOnly se usa porque el historial solo se consulta en esta pantalla.
-    @Transactional(readOnly = true)
     public List<HistorialPostulante> listar() {
         return historialRepository.findAllByOrderByFechaCambioDesc();
     }
 
-    @Transactional(readOnly = true)
     public List<HistorialPostulante> listarPorPostulante(Long postulanteId) {
         return historialRepository.findByPostulanteIdOrderByFechaCambioDesc(postulanteId);
     }
@@ -38,6 +31,7 @@ public class HistorialPostulanteServiceImpl implements HistorialPostulanteServic
             return;
         }
 
+        // Este save participa en la transaccion del servicio que realizo el cambio de estado.
         HistorialPostulante historial = new HistorialPostulante();
         historial.setPostulante(postulante);
         historial.setEstadoAnterior(estadoAnterior);

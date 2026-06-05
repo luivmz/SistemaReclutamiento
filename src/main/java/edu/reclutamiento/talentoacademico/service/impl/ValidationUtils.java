@@ -1,8 +1,10 @@
 package edu.reclutamiento.talentoacademico.service.impl;
 
 final class ValidationUtils {
-    private static final String NAME_PATTERN = "^[\\p{L}\\p{M}0-9 .,'-]+$"; // pattern regex
-    private static final String EMAIL_PATTERN = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"; // pattern regex
+    // Acepta letras con tildes, numeros y separadores comunes para nombres de personas, areas u ofertas.
+    private static final String NAME_PATTERN = "^[\\p{L}\\p{M}0-9 .,'-]+$";
+    // Validacion simple de email: suficiente para formularios internos sin implementar reglas completas de RFC.
+    private static final String EMAIL_PATTERN = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
 
     private ValidationUtils() {
     }
@@ -45,6 +47,7 @@ final class ValidationUtils {
 
     static void validarTextoOpcional(String valor, String campo, int maximo) {
         String texto = normalizar(valor);
+        // Si el campo opcional viene vacio, solo se valida longitud cuando realmente hay contenido.
         if (!texto.isBlank() && texto.length() > maximo) {
             throw new IllegalArgumentException(campo + " no debe superar " + maximo + " caracteres.");
         }

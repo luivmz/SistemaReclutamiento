@@ -6,6 +6,8 @@ import edu.reclutamiento.talentoacademico.model.Postulante;
 
 public class PostulanteMapper {
     public static PostulanteDTO toDTO(Postulante postulante) {
+        // Convierte la entidad Postulante en un DTO con los datos necesarios para la vista.
+        // Asi evitamos exponer directamente la entidad JPA y todas sus relaciones.
         PostulanteDTO dto = new PostulanteDTO();
         dto.setId(postulante.getId());
         dto.setNombre(postulante.getNombre());
@@ -19,13 +21,16 @@ public class PostulanteMapper {
         dto.setAprobado(postulante.getAprobado());
         dto.setObservacion(postulante.getObservacion());
         if (postulante.getOferta() != null) {
+            // De la relacion con la oferta copiamos datos simples para mostrarlos directamente en el JSP.
             dto.setOfertaId(postulante.getOferta().getId());
             dto.setOfertaTitulo(postulante.getOferta().getTitulo());
             if (postulante.getOferta().getArea() != null) {
+                // El nombre del area es un dato derivado de la oferta asociada.
                 dto.setAreaNombre(postulante.getOferta().getArea().getNombre());
             }
         }
         if (postulante.getUsuario() != null) {
+            // Solo enviamos el id del usuario relacionado, no la entidad Usuario completa.
             dto.setUsuarioId(postulante.getUsuario().getId());
         }
         return dto;

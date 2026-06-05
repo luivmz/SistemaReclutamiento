@@ -21,6 +21,7 @@ public class AreaServiceImpl implements AreaService {
 
     public List<Area> listarActivas() {
         // Las areas inactivas no se ofrecen al publico ni en formularios de nuevas ofertas.
+        // Spring Data interpreta findByActivaTrue y genera el filtro por activa = true.
         return areaRepository.findByActivaTrue();
     }
 

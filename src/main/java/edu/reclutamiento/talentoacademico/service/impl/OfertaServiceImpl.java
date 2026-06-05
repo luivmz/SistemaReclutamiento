@@ -23,11 +23,13 @@ public class OfertaServiceImpl implements OfertaService {
     }
 
     public List<OfertaDTO> listar() {
+        // map transforma cada entidad OfertaLaboral en el DTO que consumen las vistas.
         return ofertaRepository.findAll().stream().map(OfertaMapper::toDTO).toList();
     }
 
     public List<OfertaDTO> listarActivas() {
         // El listado publico solo muestra ofertas activas y con area activa.
+        // La consulta filtra en la BD y el stream convierte el resultado en DTOs.
         return ofertaRepository.findByActivaTrueAndAreaActivaTrue().stream().map(OfertaMapper::toDTO).toList();
     }
 
@@ -37,8 +39,11 @@ public class OfertaServiceImpl implements OfertaService {
 
     public OfertaDTO buscarActiva(Long id) {
         return ofertaRepository.findById(id)
+                // Boolean.TRUE.equals valida el Boolean sin fallar cuando su valor es null.
                 .filter(oferta -> Boolean.TRUE.equals(oferta.getActiva()))
+                // La oferta solo es visible si no tiene area o si su area tambien esta activa.
                 .filter(oferta -> oferta.getArea() == null || Boolean.TRUE.equals(oferta.getArea().getActiva()))
+                // Si supera los filtros, la referencia funcional convierte la entidad en DTO.
                 .map(OfertaMapper::toDTO)
                 .orElse(null);
     }
@@ -47,12 +52,14 @@ public class OfertaServiceImpl implements OfertaService {
         validar(dto);
         OfertaLaboral oferta = new OfertaLaboral();
         oferta.setId(dto.getId());
+        // normalizar quita espacios sobrantes antes de persistir textos visibles para el usuario.
         oferta.setTitulo(ValidationUtils.normalizar(dto.getTitulo()));
         oferta.setDescripcion(ValidationUtils.normalizar(dto.getDescripcion()));
         oferta.setVacantes(dto.getVacantes());
         oferta.setActiva(dto.getActiva() == null || dto.getActiva());
         if (dto.getAreaId() != null) {
             Area area = areaRepository.findById(dto.getAreaId()).orElse(null);
+            // No se permite crear nuevas ofertas dentro de areas desactivadas administrativamente.
             if (area != null && !Boolean.TRUE.equals(area.getActiva())) {
                 throw new IllegalArgumentException("No se puede asignar una oferta a un area inactiva.");
             }
