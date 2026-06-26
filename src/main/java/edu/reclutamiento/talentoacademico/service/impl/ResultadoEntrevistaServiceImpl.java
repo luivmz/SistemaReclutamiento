@@ -63,8 +63,8 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         return nuevo;
     }
 
-    // Guarda el resultado y actualiza entrevista, postulante e historial en una sola transaccion.
-    // Si falla alguna actualizacion, Spring revierte todo para evitar datos inconsistentes.
+    // Se usa transaccion porque guardar resultado tambien actualiza entrevista,
+    // postulante e historial como una sola operacion.
     @Transactional
     public ResultadoEntrevista guardar(ResultadoEntrevista resultado, String registradoPor) {
         validar(resultado);
@@ -99,7 +99,7 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
 
         // Estas actualizaciones dependen del resultado guardado y deben confirmarse juntas.
         actualizarEstadoEntrevista(entrevista);
-        actualizarEstadoPostulante(entrevista.getPostulante(), guardado.getResultado(), registradoPor);
+        actualizarEstadoPostulante(entrevista.getPostulante(), guardado, registradoPor);
 
         return guardado;
     }
@@ -149,38 +149,60 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         if (postulante.getEstado() == EstadoPostulante.CANCELADO) {
             throw new IllegalStateException("No se puede evaluar una postulacion cancelada.");
         }
-        if (esNuevo && (postulante.getEstado() == EstadoPostulante.APROBADO
-                || postulante.getEstado() == EstadoPostulante.RECHAZADO)) {
+        if (postulante.getEstado() == EstadoPostulante.RECHAZADO) {
+            throw new IllegalStateException("No se puede cambiar el resultado de un postulante rechazado.");
+        }
+        if (esNuevo && postulante.getEstado() == EstadoPostulante.APROBADO) {
             throw new IllegalStateException("La postulacion ya tiene un estado final.");
         }
     }
 
-    private void actualizarEstadoPostulante(Postulante postulante, EstadoResultado resultado, String registradoPor) {
+    private void actualizarEstadoPostulante(Postulante postulante, ResultadoEntrevista resultadoGuardado,
+                                            String registradoPor) {
         if (postulante == null) {
             return;
         }
         EstadoPostulante estadoAnterior = postulante.getEstado();
+        EstadoResultado resultado = resultadoGuardado.getResultado();
         String observacionHistorial = null;
 
-        // El resultado de la entrevista decide si el proceso termina o continua en evaluacion.
-        if (resultado == EstadoResultado.APROBADO) {
-            postulante.setEstado(EstadoPostulante.APROBADO);
-            postulante.setAprobado(true);
-            postulante.setObservacion("Entrevista aprobada.");
-            observacionHistorial = "Entrevista aprobada.";
-        } else if (resultado == EstadoResultado.DESAPROBADO) {
+        if (resultado == EstadoResultado.DESAPROBADO) {
+            // Si desaprueba cualquier entrevista, el proceso termina como RECHAZADO.
+            String tipoEntrevista = resultadoGuardado.getEntrevista().getTipoEntrevista().name();
+            String observacion = "Postulante rechazado por desaprobar entrevista " + tipoEntrevista + ".";
             postulante.setEstado(EstadoPostulante.RECHAZADO);
             postulante.setAprobado(false);
-            postulante.setObservacion("Entrevista desaprobada.");
-            observacionHistorial = "Entrevista desaprobada.";
+            postulante.setObservacion(observacion);
+            observacionHistorial = observacion;
+        } else if (resultado == EstadoResultado.APROBADO && todasLasEntrevistasActivasAprobadas(postulante, resultadoGuardado)) {
+            postulante.setEstado(EstadoPostulante.APROBADO);
+            postulante.setAprobado(true);
+            postulante.setObservacion("Entrevistas aprobadas.");
+            observacionHistorial = "Entrevistas aprobadas.";
         } else {
             postulante.setEstado(EstadoPostulante.EN_ENTREVISTA);
-            observacionHistorial = "Resultado pendiente.";
+            postulante.setAprobado(false);
+            observacionHistorial = resultado == EstadoResultado.APROBADO
+                    ? "Entrevista aprobada. Pendiente completar entrevistas."
+                    : "Resultado pendiente.";
         }
         Postulante guardado = postulanteRepository.save(postulante);
         // El historial permite auditar por que cambio el estado del postulante.
         historialPostulanteService.registrarCambioEstado(
                 guardado, estadoAnterior, guardado.getEstado(), observacionHistorial, registradoPor);
+    }
+
+    private boolean todasLasEntrevistasActivasAprobadas(Postulante postulante, ResultadoEntrevista resultadoActual) {
+        List<Entrevista> entrevistas = entrevistaRepository.findByPostulanteId(postulante.getId()).stream()
+                .filter(entrevista -> entrevista.getEstadoEntrevista() != EstadoEntrevista.CANCELADA)
+                .toList();
+
+        return !entrevistas.isEmpty() && entrevistas.stream().allMatch(entrevista -> {
+            ResultadoEntrevista resultado = entrevista.getId().equals(resultadoActual.getEntrevista().getId())
+                    ? resultadoActual
+                    : resultadoRepository.findByEntrevistaId(entrevista.getId()).orElse(null);
+            return resultado != null && resultado.getResultado() == EstadoResultado.APROBADO;
+        });
     }
 
     private void validar(ResultadoEntrevista resultado) {
@@ -190,9 +212,9 @@ public class ResultadoEntrevistaServiceImpl implements ResultadoEntrevistaServic
         if (resultado.getResultado() == null) {
             resultado.setResultado(EstadoResultado.PENDIENTE);
         }
-        ValidationUtils.validarEnteroNoNegativo(resultado.getPuntaje(), "El puntaje");
-        if (resultado.getPuntaje() != null && resultado.getPuntaje() > 100) {
-            throw new IllegalArgumentException("El puntaje no debe superar 100.");
+        // El puntaje se limita entre 0 y 100 para evitar datos invalidos.
+        if (resultado.getPuntaje() != null && (resultado.getPuntaje() < 0 || resultado.getPuntaje() > 100)) {
+            throw new IllegalArgumentException("El puntaje debe estar entre 0 y 100.");
         }
         // Los resultados finales requieren sustento; los pendientes pueden guardarse sin observacion.
         if (resultado.getResultado() != EstadoResultado.PENDIENTE) {

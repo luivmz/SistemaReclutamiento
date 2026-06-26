@@ -59,6 +59,11 @@ public class ResultadoEntrevistaController {
                     "error", "No se puede editar el resultado de un proceso cancelado.");
             return "redirect:/admin/entrevistas";
         }
+        if (resultado.getEntrevista().getPostulante().getEstado() == EstadoPostulante.RECHAZADO) {
+            redirectAttributes.addFlashAttribute(
+                    "error", "No se puede cambiar el resultado de un postulante rechazado.");
+            return "redirect:/admin/resultados-entrevista";
+        }
         model.addAttribute("resultado", resultado);
         return "admin/resultado-entrevista-form";
     }

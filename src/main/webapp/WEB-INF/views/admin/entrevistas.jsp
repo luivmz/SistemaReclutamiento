@@ -97,7 +97,8 @@
                                 && (e.postulanteEstado == 'POSTULADO' || e.postulanteEstado == 'EN_ENTREVISTA')}">
                             <a class="btn" href="/admin/resultados-entrevista/nuevo/${e.id}">Registrar resultado</a>
                         </c:when>
-                        <c:when test="${e.resultadoEntrevistaId != null && e.postulanteEstado != 'CANCELADO'}">
+                        <c:when test="${e.resultadoEntrevistaId != null
+                                && (e.postulanteEstado == 'POSTULADO' || e.postulanteEstado == 'EN_ENTREVISTA')}">
                             <a class="btn" href="/admin/resultados-entrevista/editar/${e.resultadoEntrevistaId}">Editar resultado</a>
                         </c:when>
                     </c:choose>

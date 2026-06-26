@@ -36,6 +36,7 @@
 
         <label>Puntaje (0-100, opcional)</label>
         <input type="number" name="puntaje" min="0" max="100" value="${resultado.puntaje}">
+        <small>El puntaje debe estar entre 0 y 100. Puede quedar vacio si el resultado esta pendiente.</small>
 
         <label>Observacion</label>
         <textarea name="observacion" rows="3" maxlength="700">${resultado.observacion}</textarea>

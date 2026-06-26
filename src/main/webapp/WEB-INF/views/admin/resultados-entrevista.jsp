@@ -9,6 +9,9 @@
     <%@ include file="../includes/admin-sidebar.jsp" %>
 <main class="admin-content">
     <h2 class="page-title">Resultados de entrevistas</h2>
+    <c:if test="${not empty error}">
+        <p class="error">${error}</p>
+    </c:if>
     <p>Para registrar un nuevo resultado, hazlo desde <a href="/admin/entrevistas">Entrevistas</a>.</p>
     <table>
         <tr>
@@ -31,7 +34,9 @@
                 <td>${r.registradoPor}</td>
                 <td>${r.fechaRegistro}</td>
                 <td>
-                    <a class="btn" href="/admin/resultados-entrevista/editar/${r.id}">Editar</a>
+                    <c:if test="${r.entrevista.postulante.estado == 'POSTULADO' || r.entrevista.postulante.estado == 'EN_ENTREVISTA'}">
+                        <a class="btn" href="/admin/resultados-entrevista/editar/${r.id}">Editar</a>
+                    </c:if>
                     <a class="btn secundario" href="/admin/resultados-entrevista/eliminar/${r.id}">Eliminar</a>
                 </td>
             </tr>
